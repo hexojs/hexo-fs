@@ -3,7 +3,6 @@ var $ = require('gulp-load-plugins')();
 var del = require('del');
 
 var lib = 'lib/**/*.js';
-var test = 'test/scripts/**/*.js';
 
 gulp.task('coverage', function(){
   return gulp.src(lib)
@@ -31,7 +30,7 @@ gulp.task('jshint', function(){
 
 gulp.task('watch', function(){
   gulp.watch(lib, ['mocha', 'jshint']);
-  gulp.watch(['test/index.js', test], ['mocha']);
+  gulp.watch(['test/index.js'], ['mocha']);
 });
 
 gulp.task('test', ['mocha', 'jshint']);
