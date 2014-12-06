@@ -4,18 +4,30 @@ var Promise = require('bluebird');
 var fs = require('../lib/fs');
 
 function createDummyFolder(path){
-  // TODO nested dummy files
   return Promise.all([
-    fs.writeFile(pathFn.join(path, 'a.txt'), 'a'),
-    fs.writeFile(pathFn.join(path, 'b.js'), 'b'),
-    fs.writeFile(pathFn.join(path, '.c'), 'c')
-  ]);}
+    // Normal files in a hidden folder
+    fs.writeFile(pathFn.join(path, '.hidden', 'a.txt'), 'a'),
+    fs.writeFile(pathFn.join(path, '.hidden', 'b.js'), 'b'),
+    // Normal folder in a hidden folder
+    fs.writeFile(pathFn.join(path, '.hidden', 'c', 'd'), 'd'),
+    // Top-class files
+    fs.writeFile(pathFn.join(path, 'e.txt'), 'e'),
+    fs.writeFile(pathFn.join(path, 'f.js'), 'f'),
+    // A hidden file
+    fs.writeFile(pathFn.join(path, '.g'), 'g'),
+    // Files in a normal folder
+    fs.writeFile(pathFn.join(path, 'folder', 'h.txt'), 'h'),
+    fs.writeFile(pathFn.join(path, 'folder', 'i.js'), 'i'),
+    // A hidden files in a normal folder
+    fs.writeFile(pathFn.join(path, 'folder', '.j'), 'j')
+  ]);
+}
 
 describe('fs', function(){
   var tmpDir = pathFn.join(__dirname, 'fs_tmp');
 
   before(function(){
-    return fs.mkdir(tmpDir);
+    return fs.mkdirs(tmpDir);
   });
 
   it('exists()', function(){
@@ -125,14 +137,16 @@ describe('fs', function(){
     return createDummyFolder(src).then(function(){
       return fs.copyDir(src, dest);
     }).then(function(files){
-      files.should.eql(['a.txt', 'b.js']);
+      files.should.eql(['e.txt', 'f.js', 'folder/h.txt', 'folder/i.js']);
 
       return Promise.all([
-        fs.readFile(pathFn.join(dest, 'a.txt')),
-        fs.readFile(pathFn.join(dest, 'b.js'))
+        fs.readFile(pathFn.join(dest, 'e.txt')),
+        fs.readFile(pathFn.join(dest, 'f.js')),
+        fs.readFile(pathFn.join(dest, 'folder', 'h.txt')),
+        fs.readFile(pathFn.join(dest, 'folder', 'i.js'))
       ]);
     }).then(function(result){
-      result.should.eql(['a', 'b']);
+      result.should.eql(['e', 'f', 'h', 'i']);
     }).then(function(){
       return Promise.all([
         fs.rmdir(src),
@@ -148,15 +162,22 @@ describe('fs', function(){
     return createDummyFolder(src).then(function(){
       return fs.copyDir(src, dest, {ignoreHidden: false});
     }).then(function(files){
-      files.should.have.members(['a.txt', 'b.js', '.c']);
+      files.should.have.members(['.hidden/a.txt', '.hidden/b.js', '.hidden/c/d',
+        'e.txt', 'f.js', '.g', 'folder/h.txt', 'folder/i.js', 'folder/.j']);
 
       return Promise.all([
-        fs.readFile(pathFn.join(dest, 'a.txt')),
-        fs.readFile(pathFn.join(dest, 'b.js')),
-        fs.readFile(pathFn.join(dest, '.c'))
+        fs.readFile(pathFn.join(dest, '.hidden', 'a.txt')),
+        fs.readFile(pathFn.join(dest, '.hidden', 'b.js')),
+        fs.readFile(pathFn.join(dest, '.hidden', 'c', 'd')),
+        fs.readFile(pathFn.join(dest, 'e.txt')),
+        fs.readFile(pathFn.join(dest, 'f.js')),
+        fs.readFile(pathFn.join(dest, '.g')),
+        fs.readFile(pathFn.join(dest, 'folder', 'h.txt')),
+        fs.readFile(pathFn.join(dest, 'folder', 'i.js')),
+        fs.readFile(pathFn.join(dest, 'folder', '.j'))
       ]);
     }).then(function(result){
-      result.should.eql(['a', 'b', 'c']);
+      result.should.eql(['a', 'b', 'd', 'e', 'f', 'g', 'h', 'i', 'j']);
     }).then(function(){
       return Promise.all([
         fs.rmdir(src),
@@ -172,13 +193,14 @@ describe('fs', function(){
     return createDummyFolder(src).then(function(){
       return fs.copyDir(src, dest, {ignorePattern: /\.js/});
     }).then(function(files){
-      files.should.have.members(['a.txt']);
+      files.should.eql(['e.txt', 'folder/h.txt']);
 
       return Promise.all([
-        fs.readFile(pathFn.join(dest, 'a.txt'))
+        fs.readFile(pathFn.join(dest, 'e.txt')),
+        fs.readFile(pathFn.join(dest, 'folder', 'h.txt'))
       ]);
     }).then(function(result){
-      result.should.eql(['a']);
+      result.should.eql(['e', 'h']);
     }).then(function(){
       return Promise.all([
         fs.rmdir(src),
@@ -193,7 +215,7 @@ describe('fs', function(){
     return createDummyFolder(target).then(function(){
       return fs.listDir(target);
     }).then(function(files){
-      files.should.have.members(['a.txt', 'b.js']);
+      files.should.have.members(['e.txt', 'f.js', 'folder/h.txt', 'folder/i.js']);
       return fs.rmdir(target);
     });
   });
@@ -204,7 +226,9 @@ describe('fs', function(){
     return createDummyFolder(target).then(function(){
       return fs.listDir(target, {ignoreHidden: false});
     }).then(function(files){
-      files.should.have.members(['a.txt', 'b.js', '.c']);
+      files.should.have.members(['.hidden/a.txt', '.hidden/b.js', '.hidden/c/d',
+        'e.txt', 'f.js', '.g', 'folder/h.txt', 'folder/i.js', 'folder/.j']);
+
       return fs.rmdir(target);
     });
   });
@@ -215,7 +239,7 @@ describe('fs', function(){
     return createDummyFolder(target).then(function(){
       return fs.listDir(target, {ignorePattern: /\.js/});
     }).then(function(files){
-      files.should.have.members(['a.txt']);
+      files.should.eql(['e.txt', 'folder/h.txt']);
       return fs.rmdir(target);
     });
   });
@@ -225,7 +249,7 @@ describe('fs', function(){
 
     return createDummyFolder(target).then(function(){
       var files = fs.listDirSync(target);
-      files.should.have.members(['a.txt', 'b.js']);
+      files.should.have.members(['e.txt', 'f.js', 'folder/h.txt', 'folder/i.js']);
       return fs.rmdir(target);
     });
   });
@@ -235,7 +259,8 @@ describe('fs', function(){
 
     return createDummyFolder(target).then(function(){
       var files = fs.listDirSync(target, {ignoreHidden: false});
-      files.should.have.members(['a.txt', 'b.js', '.c']);
+      files.should.have.members(['.hidden/a.txt', '.hidden/b.js', '.hidden/c/d',
+        'e.txt', 'f.js', '.g', 'folder/h.txt', 'folder/i.js', 'folder/.j']);
       return fs.rmdir(target);
     });
   });
@@ -245,7 +270,7 @@ describe('fs', function(){
 
     return createDummyFolder(target).then(function(){
       var files = fs.listDirSync(target, {ignorePattern: /\.js/});
-      files.should.have.members(['a.txt']);
+      files.should.eql(['e.txt', 'folder/h.txt']);
       return fs.rmdir(target);
     });
   });
@@ -278,15 +303,24 @@ describe('fs', function(){
     return createDummyFolder(target).then(function(){
       return fs.emptyDir(target);
     }).then(function(files){
-      files.should.have.members(['a.txt', 'b.js']);
+      files.should.have.members(['e.txt', 'f.js', 'folder/h.txt', 'folder/i.js']);
 
-      return Promise.all([
-        fs.exists(pathFn.join(target, 'a.txt')),
-        fs.exists(pathFn.join(target, 'b.js')),
-        fs.exists(pathFn.join(target, '.c'))
-      ]);
-    }).then(function(result){
-      result.should.eql([false, false, true]);
+      return [
+        [pathFn.join(target, '.hidden', 'a.txt'), true],
+        [pathFn.join(target, '.hidden', 'b.js'), true],
+        [pathFn.join(target, '.hidden', 'c', 'd'), true],
+        [pathFn.join(target, 'e.txt'), false],
+        [pathFn.join(target, 'f.js'), false],
+        [pathFn.join(target, '.g'), true],
+        [pathFn.join(target, 'folder', 'h.txt'), false],
+        [pathFn.join(target, 'folder', 'i.js'), false],
+        [pathFn.join(target, 'folder', '.j'), true]
+      ];
+    }).map(function(data){
+      return fs.exists(data[0]).then(function(exist){
+        exist.should.eql(data[1]);
+      });
+    }).then(function(){
       return fs.rmdir(target);
     });
   });
@@ -297,15 +331,25 @@ describe('fs', function(){
     return createDummyFolder(target).then(function(){
       return fs.emptyDir(target, {ignoreHidden: false});
     }).then(function(files){
-      files.should.have.members(['a.txt', 'b.js', '.c']);
+      files.should.have.members(['.hidden/a.txt', '.hidden/b.js', '.hidden/c/d',
+        'e.txt', 'f.js', '.g', 'folder/h.txt', 'folder/i.js', 'folder/.j']);
 
-      return Promise.all([
-        fs.exists(pathFn.join(target, 'a.txt')),
-        fs.exists(pathFn.join(target, 'b.js')),
-        fs.exists(pathFn.join(target, '.c'))
-      ]);
-    }).then(function(result){
-      result.should.eql([false, false, false]);
+      return [
+        [pathFn.join(target, '.hidden', 'a.txt'), false],
+        [pathFn.join(target, '.hidden', 'b.js'), false],
+        [pathFn.join(target, '.hidden', 'c', 'd'), false],
+        [pathFn.join(target, 'e.txt'), false],
+        [pathFn.join(target, 'f.js'), false],
+        [pathFn.join(target, '.g'), false],
+        [pathFn.join(target, 'folder', 'h.txt'), false],
+        [pathFn.join(target, 'folder', 'i.js'), false],
+        [pathFn.join(target, 'folder', '.j'), false]
+      ];
+    }).map(function(data){
+      return fs.exists(data[0]).then(function(exist){
+        exist.should.eql(data[1]);
+      });
+    }).then(function(){
       return fs.rmdir(target);
     });
   });
@@ -316,15 +360,24 @@ describe('fs', function(){
     return createDummyFolder(target).then(function(){
       return fs.emptyDir(target, {ignorePattern: /\.js/});
     }).then(function(files){
-      files.should.have.members(['a.txt']);
+      files.should.eql(['e.txt', 'folder/h.txt']);
 
-      return Promise.all([
-        fs.exists(pathFn.join(target, 'a.txt')),
-        fs.exists(pathFn.join(target, 'b.js')),
-        fs.exists(pathFn.join(target, '.c'))
-      ]);
-    }).then(function(result){
-      result.should.eql([false, true, true]);
+      return [
+        [pathFn.join(target, '.hidden', 'a.txt'), true],
+        [pathFn.join(target, '.hidden', 'b.js'), true],
+        [pathFn.join(target, '.hidden', 'c', 'd'), true],
+        [pathFn.join(target, 'e.txt'), false],
+        [pathFn.join(target, 'f.js'), true],
+        [pathFn.join(target, '.g'), true],
+        [pathFn.join(target, 'folder', 'h.txt'), false],
+        [pathFn.join(target, 'folder', 'i.js'), true],
+        [pathFn.join(target, 'folder', '.j'), true]
+      ];
+    }).map(function(data){
+      return fs.exists(data[0]).then(function(exist){
+        exist.should.eql(data[1]);
+      });
+    }).then(function(){
       return fs.rmdir(target);
     });
   });
@@ -333,17 +386,26 @@ describe('fs', function(){
     var target = pathFn.join(tmpDir, 'test');
 
     return createDummyFolder(target).then(function(){
-      return fs.emptyDir(target, {exclude: ['a.txt']});
+      return fs.emptyDir(target, {exclude: ['e.txt', 'folder/i.js']});
     }).then(function(files){
-      files.should.have.members(['b.js']);
+      files.should.have.members(['f.js', 'folder/h.txt']);
 
-      return Promise.all([
-        fs.exists(pathFn.join(target, 'a.txt')),
-        fs.exists(pathFn.join(target, 'b.js')),
-        fs.exists(pathFn.join(target, '.c'))
-      ]);
-    }).then(function(result){
-      result.should.eql([true, false, true]);
+      return [
+        [pathFn.join(target, '.hidden', 'a.txt'), true],
+        [pathFn.join(target, '.hidden', 'b.js'), true],
+        [pathFn.join(target, '.hidden', 'c', 'd'), true],
+        [pathFn.join(target, 'e.txt'), true],
+        [pathFn.join(target, 'f.js'), false],
+        [pathFn.join(target, '.g'), true],
+        [pathFn.join(target, 'folder', 'h.txt'), false],
+        [pathFn.join(target, 'folder', 'i.js'), true],
+        [pathFn.join(target, 'folder', '.j'), true]
+      ];
+    }).map(function(data){
+      return fs.exists(data[0]).then(function(exist){
+        exist.should.eql(data[1]);
+      });
+    }).then(function(){
       return fs.rmdir(target);
     });
   });
@@ -353,15 +415,24 @@ describe('fs', function(){
 
     return createDummyFolder(target).then(function(){
       var files = fs.emptyDirSync(target);
-      files.should.have.members(['a.txt', 'b.js']);
+      files.should.have.members(['e.txt', 'f.js', 'folder/h.txt', 'folder/i.js']);
 
-      return Promise.all([
-        fs.exists(pathFn.join(target, 'a.txt')),
-        fs.exists(pathFn.join(target, 'b.js')),
-        fs.exists(pathFn.join(target, '.c'))
-      ]);
-    }).then(function(result){
-      result.should.eql([false, false, true]);
+      return [
+        [pathFn.join(target, '.hidden', 'a.txt'), true],
+        [pathFn.join(target, '.hidden', 'b.js'), true],
+        [pathFn.join(target, '.hidden', 'c', 'd'), true],
+        [pathFn.join(target, 'e.txt'), false],
+        [pathFn.join(target, 'f.js'), false],
+        [pathFn.join(target, '.g'), true],
+        [pathFn.join(target, 'folder', 'h.txt'), false],
+        [pathFn.join(target, 'folder', 'i.js'), false],
+        [pathFn.join(target, 'folder', '.j'), true]
+      ];
+    }).map(function(data){
+      return fs.exists(data[0]).then(function(exist){
+        exist.should.eql(data[1]);
+      });
+    }).then(function(){
       return fs.rmdir(target);
     });
   });
@@ -371,15 +442,25 @@ describe('fs', function(){
 
     return createDummyFolder(target).then(function(){
       var files = fs.emptyDirSync(target, {ignoreHidden: false});
-      files.should.have.members(['a.txt', 'b.js', '.c']);
+      files.should.have.members(['.hidden/a.txt', '.hidden/b.js', '.hidden/c/d',
+        'e.txt', 'f.js', '.g', 'folder/h.txt', 'folder/i.js', 'folder/.j']);
 
-      return Promise.all([
-        fs.exists(pathFn.join(target, 'a.txt')),
-        fs.exists(pathFn.join(target, 'b.js')),
-        fs.exists(pathFn.join(target, '.c'))
-      ]);
-    }).then(function(result){
-      result.should.eql([false, false, false]);
+      return [
+        [pathFn.join(target, '.hidden', 'a.txt'), false],
+        [pathFn.join(target, '.hidden', 'b.js'), false],
+        [pathFn.join(target, '.hidden', 'c', 'd'), false],
+        [pathFn.join(target, 'e.txt'), false],
+        [pathFn.join(target, 'f.js'), false],
+        [pathFn.join(target, '.g'), false],
+        [pathFn.join(target, 'folder', 'h.txt'), false],
+        [pathFn.join(target, 'folder', 'i.js'), false],
+        [pathFn.join(target, 'folder', '.j'), false]
+      ];
+    }).map(function(data){
+      return fs.exists(data[0]).then(function(exist){
+        exist.should.eql(data[1]);
+      });
+    }).then(function(){
       return fs.rmdir(target);
     });
   });
@@ -389,15 +470,24 @@ describe('fs', function(){
 
     return createDummyFolder(target).then(function(){
       var files = fs.emptyDirSync(target, {ignorePattern: /\.js/});
-      files.should.have.members(['a.txt']);
+      files.should.eql(['e.txt', 'folder/h.txt']);
 
-      return Promise.all([
-        fs.exists(pathFn.join(target, 'a.txt')),
-        fs.exists(pathFn.join(target, 'b.js')),
-        fs.exists(pathFn.join(target, '.c'))
-      ]);
-    }).then(function(result){
-      result.should.eql([false, true, true]);
+      return [
+        [pathFn.join(target, '.hidden', 'a.txt'), true],
+        [pathFn.join(target, '.hidden', 'b.js'), true],
+        [pathFn.join(target, '.hidden', 'c', 'd'), true],
+        [pathFn.join(target, 'e.txt'), false],
+        [pathFn.join(target, 'f.js'), true],
+        [pathFn.join(target, '.g'), true],
+        [pathFn.join(target, 'folder', 'h.txt'), false],
+        [pathFn.join(target, 'folder', 'i.js'), true],
+        [pathFn.join(target, 'folder', '.j'), true]
+      ];
+    }).map(function(data){
+      return fs.exists(data[0]).then(function(exist){
+        exist.should.eql(data[1]);
+      });
+    }).then(function(){
       return fs.rmdir(target);
     });
   });
@@ -406,16 +496,25 @@ describe('fs', function(){
     var target = pathFn.join(tmpDir, 'test');
 
     return createDummyFolder(target).then(function(){
-      var files = fs.emptyDirSync(target, {exclude: ['a.txt']});
-      files.should.have.members(['b.js']);
+      var files = fs.emptyDirSync(target, {exclude: ['e.txt', 'folder/i.js']});
+      files.should.have.members(['f.js', 'folder/h.txt']);
 
-      return Promise.all([
-        fs.exists(pathFn.join(target, 'a.txt')),
-        fs.exists(pathFn.join(target, 'b.js')),
-        fs.exists(pathFn.join(target, '.c'))
-      ]);
-    }).then(function(result){
-      result.should.eql([true, false, true]);
+      return [
+        [pathFn.join(target, '.hidden', 'a.txt'), true],
+        [pathFn.join(target, '.hidden', 'b.js'), true],
+        [pathFn.join(target, '.hidden', 'c', 'd'), true],
+        [pathFn.join(target, 'e.txt'), true],
+        [pathFn.join(target, 'f.js'), false],
+        [pathFn.join(target, '.g'), true],
+        [pathFn.join(target, 'folder', 'h.txt'), false],
+        [pathFn.join(target, 'folder', 'i.js'), true],
+        [pathFn.join(target, 'folder', '.j'), true]
+      ];
+    }).map(function(data){
+      return fs.exists(data[0]).then(function(exist){
+        exist.should.eql(data[1]);
+      });
+    }).then(function(){
       return fs.rmdir(target);
     });
   });
