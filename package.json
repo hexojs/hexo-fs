@@ -4,7 +4,7 @@
   "description": "File system module for Hexo.",
   "main": "lib/fs",
   "scripts": {
-    "test": "./node_modules/.bin/gulp test"
+    "test": "gulp test"
   },
   "directories": {
     "lib": "./lib"
