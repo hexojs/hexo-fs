@@ -1,6 +1,8 @@
+'use strict';
+
 var gulp = require('gulp');
 var $ = require('gulp-load-plugins')();
-var del = require('del');
+var rirmaf = require('rimraf');
 
 var lib = 'lib/**/*.js';
 
@@ -10,7 +12,7 @@ gulp.task('coverage', function(){
 });
 
 gulp.task('coverage:clean', function(callback){
-  del(['coverage/**/*'], callback);
+  rirmaf('coverage', callback);
 });
 
 gulp.task('mocha', ['coverage'], function(){
