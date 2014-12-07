@@ -1,6 +1,6 @@
 {
   "name": "hexo-fs",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "File system module for Hexo.",
   "main": "lib/fs",
   "scripts": {
@@ -23,7 +23,8 @@
   "keywords": [
     "hexo",
     "fs",
-    "file"
+    "file",
+    "file system"
   ],
   "author": "Tommy Chen <tommy351@gmail.com> (http://zespia.tw)",
   "license": "MIT",
