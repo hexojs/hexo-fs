@@ -1,5 +1,3 @@
-'use strict';
-
 var gulp = require('gulp');
 var $ = require('gulp-load-plugins')();
 var rirmaf = require('rimraf');
@@ -8,7 +6,8 @@ var lib = 'lib/**/*.js';
 
 gulp.task('coverage', function(){
   return gulp.src(lib)
-    .pipe($.istanbul());
+    .pipe($.istanbul())
+    .pipe($.istanbul.hookRequire());
 });
 
 gulp.task('coverage:clean', function(callback){
