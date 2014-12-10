@@ -30,6 +30,7 @@
   "license": "MIT",
   "dependencies": {
     "bluebird": "^2.3.11",
+    "chokidar": "^0.12.0",
     "graceful-fs": "^3.0.4"
   },
   "devDependencies": {

@@ -722,6 +722,22 @@ describe('fs', function(){
     });
   });
 
+  it('watch()', function(callback){
+    fs.watch(tmpDir, function(err, watcher){
+      should.not.exist(err);
+
+      var path = pathFn.join(tmpDir, 'test.txt');
+
+      watcher.on('add', function(path_){
+        path_.should.eql(path);
+        watcher.close();
+        fs.unlink(path, callback);
+      });
+
+      fs.writeFile(path, 'test');
+    });
+  });
+
   after(function(){
     return fs.rmdir(tmpDir);
   });
