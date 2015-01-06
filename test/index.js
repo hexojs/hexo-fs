@@ -30,6 +30,10 @@ describe('fs', function(){
     return fs.mkdirs(tmpDir);
   });
 
+  after(function(){
+    return fs.rmdir(tmpDir);
+  });
+
   it('exists()', function(){
     return fs.exists(tmpDir).then(function(exist){
       exist.should.be.true;
@@ -738,7 +742,67 @@ describe('fs', function(){
     });
   });
 
-  after(function(){
-    return fs.rmdir(tmpDir);
+  it('ensurePath() - file exists', function(){
+    var target = pathFn.join(tmpDir, 'test');
+
+    return Promise.all([
+      fs.writeFile(pathFn.join(target, 'foo.txt')),
+      fs.writeFile(pathFn.join(target, 'foo-1.txt')),
+      fs.writeFile(pathFn.join(target, 'foo-2.md')),
+      fs.writeFile(pathFn.join(target, 'bar.txt'))
+    ]).then(function(){
+      return fs.ensurePath(pathFn.join(target, 'foo.txt'));
+    }).then(function(path){
+      path.should.eql(pathFn.join(target, 'foo-2.txt'));
+      return fs.rmdir(target);
+    });
+  });
+
+  it('ensurePath() - file not exist', function(){
+    var target = pathFn.join(tmpDir, 'foo.txt');
+
+    return fs.ensurePath(target).then(function(path){
+      path.should.eql(target);
+    });
+  });
+
+  it('ensurePath() - callback', function(callback){
+    var target = pathFn.join(tmpDir, 'test');
+
+    Promise.all([
+      fs.writeFile(pathFn.join(target, 'foo.txt')),
+      fs.writeFile(pathFn.join(target, 'foo-1.txt')),
+      fs.writeFile(pathFn.join(target, 'foo-2.md')),
+      fs.writeFile(pathFn.join(target, 'bar.txt'))
+    ]).then(function(){
+      fs.ensurePath(pathFn.join(target, 'foo.txt'), function(err, path){
+        should.not.exist(err);
+        path.should.eql(pathFn.join(target, 'foo-2.txt'));
+        fs.rmdir(target, callback);
+      });
+    });
+  });
+
+  it('ensurePathSync() - file exists', function(){
+    var target = pathFn.join(tmpDir, 'test');
+
+    return Promise.all([
+      fs.writeFile(pathFn.join(target, 'foo.txt')),
+      fs.writeFile(pathFn.join(target, 'foo-1.txt')),
+      fs.writeFile(pathFn.join(target, 'foo-2.md')),
+      fs.writeFile(pathFn.join(target, 'bar.txt'))
+    ]).then(function(){
+      var path = fs.ensurePathSync(pathFn.join(target, 'foo.txt'));
+      path.should.eql(pathFn.join(target, 'foo-2.txt'));
+
+      return fs.rmdir(target);
+    });
+  });
+
+  it('ensurePathSync() - file not exist', function(){
+    var target = pathFn.join(tmpDir, 'foo.txt');
+    var path = fs.ensurePathSync(target);
+
+    path.should.eql(target);
   });
 });

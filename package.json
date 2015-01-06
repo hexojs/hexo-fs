@@ -31,7 +31,8 @@
   "dependencies": {
     "bluebird": "^2.3.11",
     "chokidar": "^0.12.0",
-    "graceful-fs": "^3.0.4"
+    "graceful-fs": "^3.0.4",
+    "hexo-util": "0.0.2"
   },
   "devDependencies": {
     "chai": "^1.9.1",
