@@ -47,6 +47,14 @@ describe('fs', function(){
     });
   });
 
+  it('exists() - path is required', function(){
+    try {
+      fs.exists();
+    } catch (err){
+      err.should.have.property('message', 'path is required!');
+    }
+  });
+
   it('mkdirs()', function(){
     var target = pathFn.join(tmpDir, 'a', 'b', 'c');
 
@@ -71,6 +79,14 @@ describe('fs', function(){
     });
   });
 
+  it('mkdirs() - path is required', function(){
+    try {
+      fs.mkdirs();
+    } catch (err){
+      err.should.have.property('message', 'path is required!');
+    }
+  });
+
   it('mkdirsSync()', function(){
     var target = pathFn.join(tmpDir, 'a', 'b', 'c');
 
@@ -80,6 +96,14 @@ describe('fs', function(){
       exist.should.be.true;
       return fs.rmdir(pathFn.join(tmpDir, 'a'));
     });
+  });
+
+  it('mkdirsSync() - path is required', function(){
+    try {
+      fs.mkdirsSync();
+    } catch (err){
+      err.should.have.property('message', 'path is required!');
+    }
   });
 
   it('writeFile()', function(){
@@ -108,6 +132,14 @@ describe('fs', function(){
     });
   });
 
+  it('writeFile() - path is required', function(){
+    try {
+      fs.writeFile();
+    } catch (err){
+      err.should.have.property('message', 'path is required!');
+    }
+  });
+
   it('writeFileSync()', function(){
     var target = pathFn.join(tmpDir, 'a', 'b', 'test.txt');
     var body = 'foo';
@@ -118,6 +150,14 @@ describe('fs', function(){
       content.should.eql(body);
       return fs.rmdir(pathFn.join(tmpDir, 'a'));
     });
+  });
+
+  it('writeFileSync() - path is required', function(){
+    try {
+      fs.writeFileSync();
+    } catch (err){
+      err.should.have.property('message', 'path is required!');
+    }
   });
 
   it('appendFile()', function(){
@@ -152,6 +192,14 @@ describe('fs', function(){
     })
   });
 
+  it('appendFile() - path is required', function(){
+    try {
+      fs.appendFile();
+    } catch (err){
+      err.should.have.property('message', 'path is required!');
+    }
+  });
+
   it('appendFileSync()', function(){
     var target = pathFn.join(tmpDir, 'a', 'b', 'test.txt');
     var body = 'foo';
@@ -164,6 +212,14 @@ describe('fs', function(){
       content.should.eql(body + body2);
       return fs.rmdir(pathFn.join(tmpDir, 'a'));
     });
+  });
+
+  it('appendFileSync() - path is required', function(){
+    try {
+      fs.appendFileSync();
+    } catch (err){
+      err.should.have.property('message', 'path is required!');
+    }
   });
 
   it('copyFile()', function(){
@@ -204,6 +260,22 @@ describe('fs', function(){
         });
       });
     });
+  });
+
+  it('copyFile() - src is required', function(){
+    try {
+      fs.copyFile();
+    } catch (err){
+      err.should.have.property('message', 'src is required!');
+    }
+  });
+
+  it('copyFile() - dest is required', function(){
+    try {
+      fs.copyFile('123');
+    } catch (err){
+      err.should.have.property('message', 'dest is required!');
+    }
   });
 
   it('copyDir()', function(){
@@ -257,6 +329,22 @@ describe('fs', function(){
         }).nodeify(callback);
       });
     });
+  });
+
+  it('copyDir() - src is required', function(){
+    try {
+      fs.copyDir();
+    } catch (err){
+      err.should.have.property('message', 'src is required!');
+    }
+  });
+
+  it('copyDir() - dest is required', function(){
+    try {
+      fs.copyDir('123');
+    } catch (err){
+      err.should.have.property('message', 'dest is required!');
+    }
   });
 
   it('copyDir() - ignoreHidden off', function(){
@@ -339,6 +427,14 @@ describe('fs', function(){
     });
   });
 
+  it('listDir() - path is required', function(){
+    try {
+      fs.listDir();
+    } catch (err){
+      err.should.have.property('message', 'path is required!');
+    }
+  });
+
   it('listDir() - ignoreHidden off', function(){
     var target = pathFn.join(tmpDir, 'test');
 
@@ -373,6 +469,14 @@ describe('fs', function(){
         pathFn.join('folder', 'i.js')]);
       return fs.rmdir(target);
     });
+  });
+
+  it('listDirSync() - path is required', function(){
+    try {
+      fs.listDirSync();
+    } catch (err){
+      err.should.have.property('message', 'path is required!');
+    }
   });
 
   it('listDirSync() - ignoreHidden off', function(){
@@ -422,6 +526,14 @@ describe('fs', function(){
     });
   });
 
+  it('readFile() - path is required', function(){
+    try {
+      fs.readFile();
+    } catch (err){
+      err.should.have.property('message', 'path is required!');
+    }
+  });
+
   it('readFileSync()', function(){
     var target = pathFn.join(tmpDir, 'test.txt');
     var body = 'test';
@@ -430,6 +542,14 @@ describe('fs', function(){
       fs.readFileSync(target).should.eql(body);
       return fs.unlink(target);
     });
+  });
+
+  it('readFileSync() - path is required', function(){
+    try {
+      fs.readFileSync();
+    } catch (err){
+      err.should.have.property('message', 'path is required!');
+    }
   });
 
   it('emptyDir()', function(){
@@ -489,6 +609,14 @@ describe('fs', function(){
         }).nodeify(callback);
       });
     });
+  });
+
+  it('emptyDir() - path is required', function(){
+    try {
+      fs.emptyDir();
+    } catch (err){
+      err.should.have.property('message', 'path is required!');
+    }
   });
 
   it('emptyDir() - ignoreHidden off', function(){
@@ -605,6 +733,14 @@ describe('fs', function(){
     });
   });
 
+  it('emptyDirSync() - path is required', function(){
+    try {
+      fs.emptyDirSync();
+    } catch (err){
+      err.should.have.property('message', 'path is required!');
+    }
+  });
+
   it('emptyDirSync() - ignoreHidden off', function(){
     var target = pathFn.join(tmpDir, 'test');
 
@@ -715,6 +851,14 @@ describe('fs', function(){
     });
   });
 
+  it('rmdir() - path is required', function(){
+    try {
+      fs.rmdir();
+    } catch (err){
+      err.should.have.property('message', 'path is required!');
+    }
+  });
+
   it('rmdirSync()', function(){
     var target = pathFn.join(tmpDir, 'test');
 
@@ -724,6 +868,14 @@ describe('fs', function(){
     }).then(function(exist){
       exist.should.be.false;
     });
+  });
+
+  it('rmdirSync() - path is required', function(){
+    try {
+      fs.rmdirSync();
+    } catch (err){
+      err.should.have.property('message', 'path is required!');
+    }
   });
 
   it('watch()', function(callback){
@@ -740,6 +892,14 @@ describe('fs', function(){
 
       fs.writeFile(path, 'test');
     });
+  });
+
+  it('watch() - path is required', function(){
+    try {
+      fs.watch();
+    } catch (err){
+      err.should.have.property('message', 'path is required!');
+    }
   });
 
   it('ensurePath() - file exists', function(){
@@ -783,6 +943,14 @@ describe('fs', function(){
     });
   });
 
+  it('ensurePath() - path is required', function(){
+    try {
+      fs.ensurePath();
+    } catch (err){
+      err.should.have.property('message', 'path is required!');
+    }
+  });
+
   it('ensurePathSync() - file exists', function(){
     var target = pathFn.join(tmpDir, 'test');
 
@@ -804,5 +972,40 @@ describe('fs', function(){
     var path = fs.ensurePathSync(target);
 
     path.should.eql(target);
+  });
+
+  it('ensurePathSync() - path is required', function(){
+    try {
+      fs.ensurePathSync();
+    } catch (err){
+      err.should.have.property('message', 'path is required!');
+    }
+  });
+
+  it('ensureWriteStream()', function(){
+    var target = pathFn.join(tmpDir, 'foo', 'bar.txt');
+
+    return fs.ensureWriteStream(target).then(function(stream){
+      stream.path.should.eql(target);
+      return fs.rmdir(pathFn.dirname(target));
+    });
+  });
+
+  it('ensureWriteStream() - callback', function(callback){
+    var target = pathFn.join(tmpDir, 'foo', 'bar.txt');
+
+    fs.ensureWriteStream(target, function(err, stream){
+      should.not.exist(err);
+      stream.path.should.eql(target);
+      fs.rmdir(pathFn.dirname(target), callback);
+    });
+  });
+
+  it('ensureWriteStreamSync()', function(){
+    var target = pathFn.join(tmpDir, 'foo', 'bar.txt');
+    var stream = fs.ensureWriteStreamSync(target);
+
+    stream.path.should.eql(target);
+    return fs.rmdir(pathFn.dirname(target));
   });
 });

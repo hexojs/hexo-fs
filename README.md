@@ -144,6 +144,14 @@ Ensures the given path is available to use or appends a number to the path.
 
 Synchronous version of `fs.ensurePath`.
 
+### ensureWriteStream(path, [options], [callback])
+
+Creates the parent directories if they does not exist and returns a writable stream.
+
+### ensureWriteStream(path, [options])
+
+Synchronous version of `fs.ensureWriteStream`.
+
 ## License
 
 MIT
