@@ -534,6 +534,30 @@ describe('fs', function(){
     }
   });
 
+  it('readFile() - escape BOM', function(){
+    var target = pathFn.join(tmpDir, 'test.txt');
+    var body = '\ufefffoo';
+
+    return fs.writeFile(target, body).then(function(){
+      return fs.readFile(target);
+    }).then(function(content){
+      content.should.eql('foo');
+      return fs.unlink(target);
+    });
+  });
+
+  it('readFile() - escape Windows line ending', function(){
+    var target = pathFn.join(tmpDir, 'test.txt');
+    var body = 'foo\r\nbar';
+
+    return fs.writeFile(target, body).then(function(){
+      return fs.readFile(target);
+    }).then(function(content){
+      content.should.eql('foo\nbar');
+      return fs.unlink(target);
+    });
+  });
+
   it('readFileSync()', function(){
     var target = pathFn.join(tmpDir, 'test.txt');
     var body = 'test';
@@ -550,6 +574,26 @@ describe('fs', function(){
     } catch (err){
       err.should.have.property('message', 'path is required!');
     }
+  });
+
+  it('readFileSync() - escape BOM', function(){
+    var target = pathFn.join(tmpDir, 'test.txt');
+    var body = '\ufefffoo';
+
+    return fs.writeFile(target, body).then(function(){
+      fs.readFileSync(target).should.eql('foo');
+      return fs.unlink(target);
+    });
+  });
+
+  it('readFileSync() - escape Windows line ending', function(){
+    var target = pathFn.join(tmpDir, 'test.txt');
+    var body = 'foo\r\nbar';
+
+    return fs.writeFile(target, body).then(function(){
+      fs.readFileSync(target).should.eql('foo\nbar');
+      return fs.unlink(target);
+    });
   });
 
   it('emptyDir()', function(){
