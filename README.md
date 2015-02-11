@@ -1,6 +1,6 @@
-# fs
+# hexo-fs
 
-[![Build Status](https://travis-ci.org/hexojs/fs.svg?branch=master)](https://travis-ci.org/hexojs/fs)  [![NPM version](https://badge.fury.io/js/hexo-fs.svg)](http://badge.fury.io/js/hexo-fs) [![Coverage Status](https://img.shields.io/coveralls/hexojs/fs.svg)](https://coveralls.io/r/hexojs/fs?branch=master) [![Build status](https://ci.appveyor.com/api/projects/status/wift3c57kei3ylq4/branch/master?svg=true)](https://ci.appveyor.com/project/tommy351/fs/branch/master)
+[![Build Status](https://travis-ci.org/hexojs/hexo-fs.svg?branch=master)](https://travis-ci.org/hexojs/hexo-fs)  [![NPM version](https://badge.fury.io/js/hexo-fs.svg)](http://badge.fury.io/js/hexo-fs) [![Coverage Status](https://img.shields.io/coveralls/hexojs/hexo-fs.svg)](https://coveralls.io/r/hexojs/hexo-fs?branch=master) [![Build status](https://ci.appveyor.com/api/projects/status/wift3c57kei3ylq4/branch/master?svg=true)](https://ci.appveyor.com/project/tommy351/hexo-fs/branch/master)
 
 File system module for [Hexo].
 
@@ -79,7 +79,7 @@ Copies a directory from `src` to `dest`. It returns an array of copied files.
 Option | Description | Default
 --- | --- | ---
 `ignoreHidden` | Ignore hidden files | true
-`ignorePattern` | Ignore files which pass the regular expression | 
+`ignorePattern` | Ignore files which pass the regular expression |
 
 ### listDir(path, [options], [callback])
 
@@ -88,7 +88,7 @@ Lists files in a directory.
 Option | Description | Default
 --- | --- | ---
 `ignoreHidden` | Ignore hidden files | true
-`ignorePattern` | Ignore files which pass the regular expression | 
+`ignorePattern` | Ignore files which pass the regular expression |
 
 ### listDirSync(path, [options])
 
@@ -115,7 +115,7 @@ Deletes all files in a directory. It returns an array of deleted files.
 Option | Description | Default
 --- | --- | ---
 `ignoreHidden` | Ignore hidden files | true
-`ignorePattern` | Ignore files which pass the regular expression | 
+`ignorePattern` | Ignore files which pass the regular expression |
 `exclude` | Ignore files in the array |
 
 ### emptyDirSync(path, [options])
