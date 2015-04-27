@@ -23,8 +23,8 @@
   "author": "Tommy Chen <tommy351@gmail.com> (http://zespia.tw)",
   "license": "MIT",
   "dependencies": {
-    "bluebird": "^2.3.11",
-    "chokidar": "^0.12.0",
+    "bluebird": "^2.9.24",
+    "chokidar": "^1.0.1",
     "escape-string-regexp": "^1.0.2",
     "graceful-fs": "^3.0.4"
   },
