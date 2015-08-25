@@ -18,7 +18,7 @@ matrix:
 
 # Install scripts. (runs after repo cloning)
 install:
-  - ps: Update-NodeJsInstallation (Get-NodeJsLatestBuild $env:nodejs_version)
+  - ps: Install-Product node $env:nodejs_version
   - cmd: npm update -g npm
   - npm install
 
@@ -28,8 +28,8 @@ test_script:
   - node --version
   - npm --version
   # Run tests
-  - npm jshint
-  - npm test-cov
+  - npm run jshint
+  - npm run test-cov
 
 # Don't actually build.
 build: off
