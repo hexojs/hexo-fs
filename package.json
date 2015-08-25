@@ -4,7 +4,9 @@
   "description": "File system module for Hexo.",
   "main": "lib/fs",
   "scripts": {
-    "test": "gulp test"
+    "jshint": "jshint --reporter=node_modules/jshint-stylish lib test",
+    "test": "mocha -R spec test/index.js",
+    "test-cov": "istanbul cover _mocha --print both -- -R spec test/index.js && istanbul check-coverage"
   },
   "directories": {
     "lib": "./lib"
@@ -15,28 +17,25 @@
   "repository": "hexojs/hexo-fs",
   "homepage": "http://hexo.io/",
   "keywords": [
-    "hexo",
-    "fs",
     "file",
-    "file system"
+    "file system",
+    "fs",
+    "hexo"
   ],
   "author": "Tommy Chen <tommy351@gmail.com> (http://zespia.tw)",
   "license": "MIT",
   "dependencies": {
-    "bluebird": "^2.9.24",
+    "bluebird": "^2.9.34",
     "chokidar": "^1.0.1",
     "escape-string-regexp": "^1.0.2",
-    "graceful-fs": "^3.0.4"
+    "graceful-fs": "^4.1.2"
   },
   "devDependencies": {
-    "chai": "^1.9.1",
+    "chai": "^3.2.0",
     "coveralls": "^2.11.2",
-    "gulp": "^3.8.9",
-    "gulp-istanbul": "^0.5.0",
-    "gulp-jshint": "^1.8.6",
-    "gulp-load-plugins": "^0.7.0",
-    "gulp-mocha": "^2.0.0",
-    "jshint-stylish": "^1.0.0",
+    "istanbul": "^0.3.18",
+    "jshint": "^2.8.0",
+    "jshint-stylish": "^2.0.1",
     "mocha": "^2.0.1",
     "rimraf": "^2.2.8"
   }

@@ -28,7 +28,8 @@ test_script:
   - node --version
   - npm --version
   # Run tests
-  - npm test
+  - npm jshint
+  - npm test-cov
 
 # Don't actually build.
 build: off

@@ -191,7 +191,7 @@ describe('fs', function(){
           fs.rmdir(pathFn.join(tmpDir, 'a'), callback);
         });
       });
-    })
+    });
   });
 
   it('appendFile() - path is required', function(){
@@ -879,7 +879,7 @@ describe('fs', function(){
       return fs.exists(target);
     }).then(function(exist){
       exist.should.be.false;
-    })
+    });
   });
 
   it('rmdir() - callback', function(callback){
