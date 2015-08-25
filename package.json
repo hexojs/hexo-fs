@@ -6,7 +6,7 @@
   "scripts": {
     "jshint": "jshint --reporter=node_modules/jshint-stylish lib test",
     "test": "mocha -R spec test/index.js",
-    "test-cov": "istanbul cover --hook-run-in-context --print both _mocha -- -R spec test/index.js && istanbul check-coverage"
+    "test-cov": "istanbul cover --print both _mocha -- -R spec test/index.js && istanbul check-coverage"
   },
   "directories": {
     "lib": "./lib"
