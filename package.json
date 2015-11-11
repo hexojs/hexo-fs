@@ -1,6 +1,6 @@
 {
   "name": "hexo-fs",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "File system module for Hexo.",
   "main": "lib/fs",
   "scripts": {
