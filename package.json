@@ -4,15 +4,13 @@
   "description": "File system module for Hexo.",
   "main": "lib/fs",
   "scripts": {
-    "jshint": "jshint --reporter=node_modules/jshint-stylish lib test",
-    "test": "mocha -R spec test/index.js",
-    "test-cov": "istanbul cover --print both _mocha -- -R spec test/index.js && istanbul check-coverage"
+    "eslint": "eslint .",
+    "jscs": "jscs .",
+    "test": "mocha test/index.js",
+    "test-cov": "istanbul cover _mocha --print both test/index.js"
   },
   "directories": {
     "lib": "./lib"
-  },
-  "engines": {
-    "node": ">= 0.10.0"
   },
   "repository": "hexojs/hexo-fs",
   "homepage": "http://hexo.io/",
@@ -25,18 +23,16 @@
   "author": "Tommy Chen <tommy351@gmail.com> (http://zespia.tw)",
   "license": "MIT",
   "dependencies": {
-    "bluebird": "^2.9.34",
-    "chokidar": "^1.0.1",
-    "escape-string-regexp": "^1.0.2",
+    "bluebird": "^3.0.5",
+    "chokidar": "^1.2.0",
+    "escape-string-regexp": "^1.0.3",
     "graceful-fs": "^4.1.2"
   },
   "devDependencies": {
-    "chai": "^3.2.0",
-    "coveralls": "^2.11.2",
-    "istanbul": "^0.3.18",
-    "jshint": "^2.8.0",
-    "jshint-stylish": "^2.0.1",
-    "mocha": "^2.0.1",
-    "rimraf": "^2.2.8"
+    "chai": "^3.4.1",
+    "eslint": "^1.9.0",
+    "istanbul": "^0.4.0",
+    "jscs": "^2.5.1",
+    "mocha": "^2.3.3"
   }
 }

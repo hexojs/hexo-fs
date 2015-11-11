@@ -5,22 +5,18 @@ init:
 # Test against these versions of Node.js.
 environment:
   matrix:
-    # node.js
     - nodejs_version: "0.10"
     - nodejs_version: "0.12"
-    # io.js
-    - nodejs_version: "1.0"
-
-# Allow failing jobs for bleeding-edge Node.js versions.
-matrix:
-  allow_failures:
-    - nodejs_version: "1.0"
+    - nodejs_version: "4"
+    - nodejs_version: "5"
 
 # Install scripts. (runs after repo cloning)
 install:
   - ps: Install-Product node $env:nodejs_version
-  - cmd: npm update -g npm
   - npm install
+
+cache:
+  - node_modules
 
 # Post-install test scripts.
 test_script:
@@ -28,7 +24,8 @@ test_script:
   - node --version
   - npm --version
   # Run tests
-  - npm run jshint
+  - npm run eslint
+  - npm run jscs
   - npm test
 
 # Don't actually build.
