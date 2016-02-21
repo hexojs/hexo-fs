@@ -653,6 +653,21 @@ describe('fs', function() {
     });
   });
 
+  it('unlink()', function() {
+    var target = pathFn.join(tmpDir, 'test-unlink');
+
+    return fs.writeFile(target, '').then(function() {
+      return fs.exists(target);
+    }).then(function(exist) {
+      exist.should.eql(true);
+      return fs.unlink(target);
+    }).then(function() {
+      return fs.exists(target);
+    }).then(function(exist) {
+      exist.should.eql(false);
+    });
+  });
+
   it('emptyDir()', function() {
     var target = pathFn.join(tmpDir, 'test');
 
