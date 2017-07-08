@@ -32,8 +32,9 @@ describe('fs', function() {
     return fs.mkdirs(tmpDir);
   });
 
-  after(function() {
-    return fs.rmdir(tmpDir);
+  after(function(done) {
+    fs.rmdir(tmpDir);
+    done();
   });
 
   it('exists()', function() {
