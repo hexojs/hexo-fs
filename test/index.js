@@ -1139,7 +1139,7 @@ describe('fs', function() {
     return fs.ensureWriteStream(target).then(function(stream) {
       stream.path.should.eql(target);
       stream.on('finish', function() {
-        return fs.rmdir(pathFn.dirname(target));
+        return fs.unlink(target);
       });
     });
   });
@@ -1150,9 +1150,7 @@ describe('fs', function() {
     fs.ensureWriteStream(target, function(err, stream) {
       should.not.exist(err);
       stream.path.should.eql(target);
-      stream.on('open', function() {
-        return fs.rmdir(pathFn.dirname(target), callback);
-      });
+      callback();
     });
   });
 
@@ -1161,7 +1159,7 @@ describe('fs', function() {
     var stream = fs.ensureWriteStreamSync(target);
 
     stream.path.should.eql(target);
-    stream.on('open', function() {
+    stream.on('finish', function() {
       return fs.rmdir(pathFn.dirname(target));
     });
   });
