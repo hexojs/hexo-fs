@@ -32,8 +32,9 @@ describe('fs', function() {
     return fs.mkdirs(tmpDir);
   });
 
-  after(function() {
-    return fs.rmdir(tmpDir);
+  after(function(done) {
+    fs.rmdir(tmpDir);
+    done();
   });
 
   it('exists()', function() {
@@ -1137,7 +1138,9 @@ describe('fs', function() {
 
     return fs.ensureWriteStream(target).then(function(stream) {
       stream.path.should.eql(target);
-      return fs.rmdir(pathFn.dirname(target));
+      stream.on('finish', function() {
+        return fs.unlink(target);
+      });
     });
   });
 
@@ -1147,7 +1150,7 @@ describe('fs', function() {
     fs.ensureWriteStream(target, function(err, stream) {
       should.not.exist(err);
       stream.path.should.eql(target);
-      fs.rmdir(pathFn.dirname(target), callback);
+      callback();
     });
   });
 
@@ -1156,6 +1159,8 @@ describe('fs', function() {
     var stream = fs.ensureWriteStreamSync(target);
 
     stream.path.should.eql(target);
-    return fs.rmdir(pathFn.dirname(target));
+    stream.on('finish', function() {
+      return fs.rmdir(pathFn.dirname(target));
+    });
   });
 });
