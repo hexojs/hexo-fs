@@ -32,9 +32,8 @@ describe('fs', function() {
     return fs.mkdirs(tmpDir);
   });
 
-  after(function(done) {
-    fs.rmdir(tmpDir);
-    done();
+  after(function() {
+    return fs.rmdir(tmpDir);
   });
 
   it('exists()', function() {
@@ -1026,23 +1025,26 @@ describe('fs', function() {
 
   it('watch()', function() {
     var watcher;
+    var target = pathFn.join(tmpDir, 'test.txt');
 
     return fs.watch(tmpDir).then(function(watcher_) {
       watcher = watcher_;
 
       return new Promise(function(resolve, reject) {
-        var path = pathFn.join(tmpDir, 'test.txt');
-
         watcher.on('add', function(path_) {
-          path_.should.eql(path);
+          try {
+            path_.should.eql(target);
+          } catch (err) {
+            reject(err);
+          }
           resolve();
         });
 
-        fs.writeFile(path, 'test').catch(reject);
+        fs.writeFile(target, 'test').catch(reject);
       });
     }).finally(function() {
       if (watcher) watcher.close();
-    });
+    }).then(() => fs.unlink(target));
   });
 
   it('watch() - path is required', function() {
@@ -1133,14 +1135,15 @@ describe('fs', function() {
     }
   });
 
-  it('ensureWriteStream()', function() {
+  it('ensureWriteStream()', function(callback) {
     var target = pathFn.join(tmpDir, 'foo', 'bar.txt');
 
-    return fs.ensureWriteStream(target).then(function(stream) {
+    fs.ensureWriteStream(target).then(function(stream) {
       stream.path.should.eql(target);
       stream.on('finish', function() {
-        return fs.unlink(target);
+        fs.unlink(target, callback);
       });
+      stream.end();
     });
   });
 
@@ -1150,17 +1153,21 @@ describe('fs', function() {
     fs.ensureWriteStream(target, function(err, stream) {
       should.not.exist(err);
       stream.path.should.eql(target);
-      callback();
+      stream.on('finish', function() {
+        fs.unlink(target, callback);
+      });
+      stream.end();
     });
   });
 
-  it('ensureWriteStreamSync()', function() {
+  it('ensureWriteStreamSync()', function(callback) {
     var target = pathFn.join(tmpDir, 'foo', 'bar.txt');
     var stream = fs.ensureWriteStreamSync(target);
 
     stream.path.should.eql(target);
     stream.on('finish', function() {
-      return fs.rmdir(pathFn.dirname(target));
+      fs.rmdir(pathFn.dirname(target), callback);
     });
+    stream.end();
   });
 });
