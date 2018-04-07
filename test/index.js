@@ -1044,7 +1044,7 @@ describe('fs', function() {
       });
     }).finally(function() {
       if (watcher) watcher.close();
-    }).then(function(){ return fs.unlink(target); });
+    }).then(function() { return fs.unlink(target); });
   });
 
   it('watch() - path is required', function() {
