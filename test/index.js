@@ -1043,8 +1043,11 @@ describe('fs', function() {
         fs.writeFile(target, 'test').catch(reject);
       });
     }).finally(function() {
-      if (watcher) watcher.close();
-    }).then(function() { return fs.unlink(target); });
+      if (watcher) {
+        watcher.close();
+      }
+      return fs.unlink(target);
+    });
   });
 
   it('watch() - path is required', function() {
