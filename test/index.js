@@ -44,11 +44,7 @@ describe('fs', () => {
   });
 
   it('exists() - path is required', () => {
-    try {
-      fs.exists();
-    } catch (err) {
-      err.should.have.property('message', 'path is required!');
-    }
+    fs.exists.should.to.throw('path is required!');
   });
 
   it('mkdirs()', () => {
@@ -76,11 +72,7 @@ describe('fs', () => {
   });
 
   it('mkdirs() - path is required', () => {
-    try {
-      fs.mkdirs();
-    } catch (err) {
-      err.should.have.property('message', 'path is required!');
-    }
+    fs.mkdirs.should.to.throw('path is required!');
   });
 
   it('mkdirsSync()', () => {
@@ -95,11 +87,7 @@ describe('fs', () => {
   });
 
   it('mkdirsSync() - path is required', () => {
-    try {
-      fs.mkdirsSync();
-    } catch (err) {
-      err.should.have.property('message', 'path is required!');
-    }
+    fs.mkdirsSync.should.to.throw('path is required!');
   });
 
   it('writeFile()', () => {
@@ -131,11 +119,7 @@ describe('fs', () => {
   });
 
   it('writeFile() - path is required', () => {
-    try {
-      fs.writeFile();
-    } catch (err) {
-      err.should.have.property('message', 'path is required!');
-    }
+    fs.writeFile.should.to.throw('path is required!');
   });
 
   it('writeFileSync()', () => {
@@ -151,11 +135,7 @@ describe('fs', () => {
   });
 
   it('writeFileSync() - path is required', () => {
-    try {
-      fs.writeFileSync();
-    } catch (err) {
-      err.should.have.property('message', 'path is required!');
-    }
+    fs.writeFileSync.should.to.throw('path is required!');
   });
 
   it('appendFile()', () => {
@@ -191,11 +171,7 @@ describe('fs', () => {
   });
 
   it('appendFile() - path is required', () => {
-    try {
-      fs.appendFile();
-    } catch (err) {
-      err.should.have.property('message', 'path is required!');
-    }
+    fs.appendFile.should.to.throw('path is required!');
   });
 
   it('appendFileSync()', () => {
@@ -213,11 +189,7 @@ describe('fs', () => {
   });
 
   it('appendFileSync() - path is required', () => {
-    try {
-      fs.appendFileSync();
-    } catch (err) {
-      err.should.have.property('message', 'path is required!');
-    }
+    fs.appendFileSync.should.to.throw('path is required!');
   });
 
   it('copyFile()', () => {
@@ -257,19 +229,11 @@ describe('fs', () => {
   });
 
   it('copyFile() - src is required', () => {
-    try {
-      fs.copyFile();
-    } catch (err) {
-      err.should.have.property('message', 'src is required!');
-    }
+    fs.copyFile.should.to.throw('src is required!');
   });
 
   it('copyFile() - dest is required', () => {
-    try {
-      fs.copyFile('123');
-    } catch (err) {
-      err.should.have.property('message', 'dest is required!');
-    }
+    (() => fs.copyFile('123')).should.to.throw('dest is required!');
   });
 
   it('copyDir()', () => {
@@ -329,19 +293,11 @@ describe('fs', () => {
   });
 
   it('copyDir() - src is required', () => {
-    try {
-      fs.copyDir();
-    } catch (err) {
-      err.should.have.property('message', 'src is required!');
-    }
+    fs.copyDir.should.to.throw('src is required!');
   });
 
   it('copyDir() - dest is required', () => {
-    try {
-      fs.copyDir('123');
-    } catch (err) {
-      err.should.have.property('message', 'dest is required!');
-    }
+    (() => fs.copyDir('123')).should.to.throw('dest is required!');
   });
 
   it('copyDir() - ignoreHidden off', () => {
@@ -436,11 +392,7 @@ describe('fs', () => {
   });
 
   it('listDir() - path is required', () => {
-    try {
-      fs.listDir();
-    } catch (err) {
-      err.should.have.property('message', 'path is required!');
-    }
+    fs.listDir.should.to.throw('path is required!');
   });
 
   it('listDir() - ignoreHidden off', () => {
@@ -493,11 +445,7 @@ describe('fs', () => {
   });
 
   it('listDirSync() - path is required', () => {
-    try {
-      fs.listDirSync();
-    } catch (err) {
-      err.should.have.property('message', 'path is required!');
-    }
+    fs.listDirSync.should.to.throw('path is required!');
   });
 
   it('listDirSync() - ignoreHidden off', () => {
@@ -560,11 +508,7 @@ describe('fs', () => {
   });
 
   it('readFile() - path is required', () => {
-    try {
-      fs.readFile();
-    } catch (err) {
-      err.should.have.property('message', 'path is required!');
-    }
+    fs.readFile.should.to.throw('path is required!');
   });
 
   it('readFile() - escape BOM', () => {
@@ -602,11 +546,7 @@ describe('fs', () => {
   });
 
   it('readFileSync() - path is required', () => {
-    try {
-      fs.readFileSync();
-    } catch (err) {
-      err.should.have.property('message', 'path is required!');
-    }
+    fs.readFileSync.should.to.throw('path is required!');
   });
 
   it('readFileSync() - escape BOM', () => {
@@ -706,11 +646,7 @@ describe('fs', () => {
   });
 
   it('emptyDir() - path is required', () => {
-    try {
-      fs.emptyDir();
-    } catch (err) {
-      err.should.have.property('message', 'path is required!');
-    }
+    fs.emptyDir.should.to.throw('path is required!');
   });
 
   it('emptyDir() - ignoreHidden off', () => {
@@ -824,11 +760,7 @@ describe('fs', () => {
   });
 
   it('emptyDirSync() - path is required', () => {
-    try {
-      fs.emptyDirSync();
-    } catch (err) {
-      err.should.have.property('message', 'path is required!');
-    }
+    fs.emptyDirSync.should.to.throw('path is required!');
   });
 
   it('emptyDirSync() - ignoreHidden off', () => {
@@ -940,11 +872,7 @@ describe('fs', () => {
   });
 
   it('rmdir() - path is required', () => {
-    try {
-      fs.rmdir();
-    } catch (err) {
-      err.should.have.property('message', 'path is required!');
-    }
+    fs.rmdir.should.to.throw('path is required!');
   });
 
   it('rmdirSync()', () => {
@@ -959,11 +887,7 @@ describe('fs', () => {
   });
 
   it('rmdirSync() - path is required', () => {
-    try {
-      fs.rmdirSync();
-    } catch (err) {
-      err.should.have.property('message', 'path is required!');
-    }
+    fs.rmdirSync.should.to.throw('path is required!');
   });
 
   it('watch()', () => {
@@ -992,11 +916,7 @@ describe('fs', () => {
   });
 
   it('watch() - path is required', () => {
-    try {
-      fs.watch();
-    } catch (err) {
-      err.should.have.property('message', 'path is required!');
-    }
+    fs.watch.should.to.throw('path is required!');
   });
 
   it('ensurePath() - file exists', () => {
@@ -1040,11 +960,7 @@ describe('fs', () => {
   });
 
   it('ensurePath() - path is required', () => {
-    try {
-      fs.ensurePath();
-    } catch (err) {
-      err.should.have.property('message', 'path is required!');
-    }
+    fs.ensurePath.should.to.throw('path is required!');
   });
 
   it('ensurePathSync() - file exists', () => {
@@ -1071,11 +987,7 @@ describe('fs', () => {
   });
 
   it('ensurePathSync() - path is required', () => {
-    try {
-      fs.ensurePathSync();
-    } catch (err) {
-      err.should.have.property('message', 'path is required!');
-    }
+    fs.ensurePathSync.should.to.throw('path is required!');
   });
 
   it('ensureWriteStream()', () => {
