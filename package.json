@@ -25,17 +25,17 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "bluebird": "^3.4.0",
-    "chokidar": "^1.5.2",
+    "bluebird": "^3.5.1",
+    "chokidar": "^2.0.4",
     "escape-string-regexp": "^1.0.5",
-    "graceful-fs": "^4.1.4"
+    "graceful-fs": "^4.1.11"
   },
   "devDependencies": {
     "chai": "^3.5.0",
     "eslint": "^4.19.1",
     "eslint-config-hexo": "^3.0.0",
-    "istanbul": "^0.4.3",
-    "mocha": "^5.1.0"
+    "istanbul": "^0.4.5",
+    "mocha": "^5.2.0"
   },
   "engines": {
     "node": ">=6.9.0"
