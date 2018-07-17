@@ -1,9 +1,12 @@
 'use strict';
 
-var should = require('chai').should();
+require('chai').should();
 var pathFn = require('path');
 var Promise = require('bluebird');
 var fs = require('../lib/fs');
+var iferr = require('iferr');
+
+var tiferr = iferr.tiferr;
 
 function createDummyFolder(path) {
   return Promise.all([
@@ -71,14 +74,12 @@ describe('fs', function() {
   it('mkdirs() - callback', function(callback) {
     var target = pathFn.join(tmpDir, 'a', 'b', 'c');
 
-    fs.mkdirs(target, function(err) {
-      should.not.exist(err);
-
+    fs.mkdirs(target, tiferr(callback, function() {
       fs.exists(target, function(exist) {
         exist.should.be.true;
         fs.rmdir(pathFn.join(tmpDir, 'a'), callback);
       });
-    });
+    }));
   });
 
   it('mkdirs() - path is required', function() {
@@ -124,14 +125,12 @@ describe('fs', function() {
     var target = pathFn.join(tmpDir, 'a', 'b', 'test.txt');
     var body = 'foo';
 
-    fs.writeFile(target, body, function(err) {
-      should.not.exist(err);
-
-      fs.readFile(target, function(_, content) {
+    fs.writeFile(target, body, tiferr(callback, function() {
+      fs.readFile(target, tiferr(callback, function(content) {
         content.should.eql(body);
         fs.rmdir(pathFn.join(tmpDir, 'a'), callback);
-      });
-    });
+      }));
+    }));
   });
 
   it('writeFile() - path is required', function() {
@@ -182,16 +181,14 @@ describe('fs', function() {
     var body = 'foo';
     var body2 = 'bar';
 
-    fs.writeFile(target, body, function() {
-      fs.appendFile(target, body2, function(err) {
-        should.not.exist(err);
-
-        fs.readFile(target, function(_, content) {
+    fs.writeFile(target, body, tiferr(callback, function() {
+      fs.appendFile(target, body2, tiferr(callback, function() {
+        fs.readFile(target, tiferr(callback, function(content) {
           content.should.eql(body + body2);
           fs.rmdir(pathFn.join(tmpDir, 'a'), callback);
-        });
-      });
-    });
+        }));
+      }));
+    }));
   });
 
   it('appendFile() - path is required', function() {
@@ -248,23 +245,18 @@ describe('fs', function() {
     var dest = pathFn.join(tmpDir, 'a', 'b', 'test.txt');
     var body = 'foo';
 
-    fs.writeFile(src, body, function(err) {
-      if (err) return callback(err);
-
-      fs.copyFile(src, dest, function(err) {
-        if (err) return callback(err);
-
-        fs.readFile(dest, function(err, content) {
-          if (err) return callback(err);
+    fs.writeFile(src, body, tiferr(callback, function() {
+      fs.copyFile(src, dest, tiferr(callback, function() {
+        fs.readFile(dest, tiferr(callback, function(content) {
           content.should.eql(body);
 
           Promise.all([
             fs.unlink(src),
             fs.rmdir(pathFn.join(tmpDir, 'a'))
           ]).asCallback(callback);
-        });
-      });
-    });
+        }));
+      }));
+    }));
   });
 
   it('copyFile() - src is required', function() {
@@ -317,9 +309,8 @@ describe('fs', function() {
     var src = pathFn.join(tmpDir, 'a');
     var dest = pathFn.join(tmpDir, 'b');
 
-    createDummyFolder(src).then(function() {
-      fs.copyDir(src, dest, function(err, files) {
-        should.not.exist(err);
+    createDummyFolder(src).asCallback(callback, function() {
+      fs.copyDir(src, dest, tiferr(callback, function(files) {
         files.should.have.members([
           'e.txt',
           'f.js',
@@ -332,15 +323,14 @@ describe('fs', function() {
           fs.readFile(pathFn.join(dest, 'f.js')),
           fs.readFile(pathFn.join(dest, 'folder', 'h.txt')),
           fs.readFile(pathFn.join(dest, 'folder', 'i.js'))
-        ]).then(function(result) {
+        ]).asCallback(tiferr(callback, function(result) {
           result.should.eql(['e', 'f', 'h', 'i']);
-        }).then(function() {
-          return Promise.all([
+          Promise.all([
             fs.rmdir(src),
             fs.rmdir(dest)
-          ]);
-        }).asCallback(callback);
-      });
+          ]).asCallback(callback);
+        }));
+      }));
     });
   });
 
@@ -443,10 +433,8 @@ describe('fs', function() {
   it('listDir() - callback', function(callback) {
     var target = pathFn.join(tmpDir, 'test');
 
-    createDummyFolder(target).then(function() {
-      fs.listDir(target, function(err, files) {
-        if (err) return callback(err);
-
+    createDummyFolder(target).asCallback(callback, function() {
+      fs.listDir(target, tiferr(callback, function(files) {
         files.should.have.members([
           'e.txt',
           'f.js',
@@ -455,7 +443,7 @@ describe('fs', function() {
         ]);
 
         fs.rmdir(target, callback);
-      });
+      }));
     });
   });
 
@@ -571,16 +559,12 @@ describe('fs', function() {
     var target = pathFn.join(tmpDir, 'test.txt');
     var body = 'test';
 
-    fs.writeFile(target, body, function(err) {
-      if (err) return callback(err);
-
-      fs.readFile(target, function(err, content) {
-        if (err) return callback(err);
-
+    fs.writeFile(target, body, tiferr(callback, function() {
+      fs.readFile(target, tiferr(callback, function(content) {
         content.should.eql(body);
         fs.unlink(target, callback);
-      });
-    });
+      }));
+    }));
   });
 
   it('readFile() - path is required', function() {
@@ -704,10 +688,8 @@ describe('fs', function() {
   it('emptyDir() - callback', function(callback) {
     var target = pathFn.join(tmpDir, 'test');
 
-    createDummyFolder(target).then(function() {
-      fs.emptyDir(target, function(err, files) {
-        if (err) return callback(err);
-
+    createDummyFolder(target).asCallback(tiferr(callback, function() {
+      fs.emptyDir(target, tiferr(callback, function(files) {
         files.should.have.members([
           'e.txt',
           'f.js',
@@ -729,11 +711,11 @@ describe('fs', function() {
           return fs.exists(data[0]).then(function(exist) {
             exist.should.eql(data[1]);
           });
-        }).then(function() {
-          return fs.rmdir(target);
-        }).asCallback(callback);
-      });
-    });
+        }).asCallback(tiferr(callback, function() {
+          fs.rmdir(target, callback);
+        }));
+      }));
+    }));
   });
 
   it('emptyDir() - path is required', function() {
@@ -984,16 +966,14 @@ describe('fs', function() {
   it('rmdir() - callback', function(callback) {
     var target = pathFn.join(tmpDir, 'test');
 
-    createDummyFolder(target).then(function() {
-      fs.rmdir(target, function(err) {
-        should.not.exist(err);
-
+    createDummyFolder(target).asCallback(tiferr(callback, function() {
+      fs.rmdir(target, tiferr(callback, function() {
         fs.exists(target, function(exist) {
           exist.should.be.false;
           callback();
         });
-      });
-    });
+      }));
+    }));
   });
 
   it('rmdir() - path is required', function() {
@@ -1090,13 +1070,12 @@ describe('fs', function() {
       fs.writeFile(pathFn.join(target, 'foo-1.txt')),
       fs.writeFile(pathFn.join(target, 'foo-2.md')),
       fs.writeFile(pathFn.join(target, 'bar.txt'))
-    ]).then(function() {
-      fs.ensurePath(pathFn.join(target, 'foo.txt'), function(err, path) {
-        should.not.exist(err);
+    ]).asCallback(tiferr(callback, function() {
+      fs.ensurePath(pathFn.join(target, 'foo.txt'), tiferr(callback, function(path) {
         path.should.eql(pathFn.join(target, 'foo-2.txt'));
         fs.rmdir(target, callback);
-      });
-    });
+      }));
+    }));
   });
 
   it('ensurePath() - path is required', function() {
@@ -1138,39 +1117,57 @@ describe('fs', function() {
     }
   });
 
-  it('ensureWriteStream()', function(callback) {
+  it('ensureWriteStream()', function() {
     var target = pathFn.join(tmpDir, 'foo', 'bar.txt');
+
+    var _resolve, _reject;
+
+    var promise = new Promise(function(resolve, reject) {
+      _resolve = resolve;
+      _reject = reject;
+    });
 
     fs.ensureWriteStream(target).then(function(stream) {
       stream.path.should.eql(target);
       stream.on('finish', function() {
-        fs.unlink(target, callback);
+        fs.unlink(target).then(_resolve, _reject);
       });
       stream.end();
     });
+
+    return promise;
   });
 
   it('ensureWriteStream() - callback', function(callback) {
     var target = pathFn.join(tmpDir, 'foo', 'bar.txt');
 
-    fs.ensureWriteStream(target, function(err, stream) {
-      should.not.exist(err);
+    fs.ensureWriteStream(target, tiferr(callback, function(stream) {
       stream.path.should.eql(target);
       stream.on('finish', function() {
         fs.unlink(target, callback);
       });
       stream.end();
-    });
+    }));
   });
 
-  it('ensureWriteStreamSync()', function(callback) {
+  it('ensureWriteStreamSync()', function() {
     var target = pathFn.join(tmpDir, 'foo', 'bar.txt');
+
+    var _resolve, _reject;
+
+    var promise = new Promise(function(resolve, reject) {
+      _resolve = resolve;
+      _reject = reject;
+    });
+
     var stream = fs.ensureWriteStreamSync(target);
 
     stream.path.should.eql(target);
     stream.on('finish', function() {
-      fs.rmdir(pathFn.dirname(target), callback);
+      fs.rmdir(pathFn.dirname(target)).then(_resolve, _reject);
     });
     stream.end();
+
+    return promise;
   });
 });
