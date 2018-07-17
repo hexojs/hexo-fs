@@ -47,7 +47,12 @@ describe('fs', function() {
 
   it('exists() - callback', function(callback) {
     fs.exists(tmpDir, function(exist) {
-      exist.should.be.true;
+      try {
+        exist.should.be.true;
+      } catch (e) {
+        callback(e);
+        return;
+      }
       callback();
     });
   });
@@ -969,7 +974,12 @@ describe('fs', function() {
     createDummyFolder(target).asCallback(tiferr(callback, function() {
       fs.rmdir(target, tiferr(callback, function() {
         fs.exists(target, function(exist) {
-          exist.should.be.false;
+          try {
+            exist.should.be.false;
+          } catch (e) {
+            callback(e);
+            return;
+          }
           callback();
         });
       }));
