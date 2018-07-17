@@ -1120,22 +1120,17 @@ describe('fs', function() {
   it('ensureWriteStream()', function() {
     var target = pathFn.join(tmpDir, 'foo', 'bar.txt');
 
-    var _resolve, _reject;
-
-    var promise = new Promise(function(resolve, reject) {
-      _resolve = resolve;
-      _reject = reject;
-    });
-
-    fs.ensureWriteStream(target).then(function(stream) {
+    return fs.ensureWriteStream(target).then(function(stream) {
       stream.path.should.eql(target);
-      stream.on('finish', function() {
-        fs.unlink(target).then(_resolve, _reject);
-      });
-      stream.end();
-    });
 
-    return promise;
+      return new Promise(function(resolve, reject) {
+        stream.on('error', reject);
+        stream.on('finish', function() {
+          resolve(fs.unlink(target));
+        });
+        stream.end();
+      });
+    });
   });
 
   it('ensureWriteStream() - callback', function(callback) {
@@ -1143,6 +1138,7 @@ describe('fs', function() {
 
     fs.ensureWriteStream(target, tiferr(callback, function(stream) {
       stream.path.should.eql(target);
+      stream.on('error', callback);
       stream.on('finish', function() {
         fs.unlink(target, callback);
       });
@@ -1153,21 +1149,16 @@ describe('fs', function() {
   it('ensureWriteStreamSync()', function() {
     var target = pathFn.join(tmpDir, 'foo', 'bar.txt');
 
-    var _resolve, _reject;
-
-    var promise = new Promise(function(resolve, reject) {
-      _resolve = resolve;
-      _reject = reject;
-    });
-
     var stream = fs.ensureWriteStreamSync(target);
 
     stream.path.should.eql(target);
-    stream.on('finish', function() {
-      fs.rmdir(pathFn.dirname(target)).then(_resolve, _reject);
-    });
-    stream.end();
 
-    return promise;
+    return new Promise(function(resolve, reject) {
+      stream.on('error', reject);
+      stream.on('finish', function() {
+        resolve(fs.rmdir(pathFn.dirname(target)));
+      });
+      stream.end();
+    });
   });
 });
