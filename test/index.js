@@ -69,7 +69,7 @@ describe('fs', () => {
     fs.mkdirs(target, tiferr(callback, () => {
       fs.exists(target, exist => {
         exist.should.be.true;
-        return fs.rmdir(pathFn.join(tmpDir, 'a'));
+        fs.rmdir(pathFn.join(tmpDir, 'a'), callback);
       });
     }));
   });
