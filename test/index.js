@@ -1,9 +1,11 @@
 'use strict';
 
 require('chai').should();
+
 const pathFn = require('path');
 const Promise = require('bluebird');
 const fs = require('../lib/fs');
+const { tiferr } = require('iferr');
 
 function createDummyFolder(path) {
   return Promise.all([
@@ -38,7 +40,12 @@ describe('fs', () => {
 
   it('exists() - callback', callback => {
     fs.exists(tmpDir, exist => {
-      exist.should.be.true;
+      try {
+        exist.should.be.true;
+      } catch (e) {
+        callback(e);
+        return;
+      }
       callback();
     });
   });
@@ -56,19 +63,15 @@ describe('fs', () => {
     });
   });
 
-  it('mkdirs() - callback', () => {
+  it('mkdirs() - callback', callback => {
     const target = pathFn.join(tmpDir, 'a', 'b', 'c');
 
-    const testerPromise = new Promise((resolve, reject) => {
-      fs.mkdirs(target, err => { err ? reject(err) : resolve(); });
-    });
-
-    return testerPromise
-      .then(() => fs.exists(target))
-      .then(exist => {
+    fs.mkdirs(target, tiferr(callback, () => {
+      fs.exists(target, exist => {
         exist.should.be.true;
-        return fs.rmdir(pathFn.join(tmpDir, 'a'));
+        fs.rmdir(pathFn.join(tmpDir, 'a'), callback);
       });
+    }));
   });
 
   it('mkdirs() - path is required', () => {
@@ -102,20 +105,16 @@ describe('fs', () => {
       });
   });
 
-  it('writeFile() - callback', () => {
+  it('writeFile() - callback', callback => {
     const target = pathFn.join(tmpDir, 'a', 'b', 'test.txt');
     const body = 'foo';
 
-    const testerPromise = new Promise((resolve, reject) => {
-      fs.writeFile(target, body, err => { err ? reject(err) : resolve(); });
-    });
-
-    return testerPromise
-      .then(() => fs.readFile(target))
-      .then(content => {
+    fs.writeFile(target, body, tiferr(callback, () => {
+      fs.readFile(target, tiferr(callback, content => {
         content.should.eql(body);
-        return fs.rmdir(pathFn.join(tmpDir, 'a'));
-      });
+        fs.rmdir(pathFn.join(tmpDir, 'a'), callback);
+      }));
+    }));
   });
 
   it('writeFile() - path is required', () => {
@@ -152,22 +151,19 @@ describe('fs', () => {
       });
   });
 
-  it('appendFile() - callback', () => {
+  it('appendFile() - callback', callback => {
     const target = pathFn.join(tmpDir, 'a', 'b', 'test.txt');
     const body = 'foo';
     const body2 = 'bar';
 
-    const testerWrap = () => new Promise((resolve, reject) => {
-      fs.appendFile(target, body2, err => { err ? reject(err) : resolve(); });
-    });
-
-    return fs.writeFile(target, body)
-      .then(testerWrap)
-      .then(() => fs.readFile(target))
-      .then(content => {
-        content.should.eql(body + body2);
-        return fs.rmdir(pathFn.join(tmpDir, 'a'));
-      });
+    fs.writeFile(target, body, tiferr(callback, () => {
+      fs.appendFile(target, body2, tiferr(callback, () => {
+        fs.readFile(target, tiferr(callback, content => {
+          content.should.eql(body + body2);
+          fs.rmdir(pathFn.join(tmpDir, 'a'), callback);
+        }));
+      }));
+    }));
   });
 
   it('appendFile() - path is required', () => {
@@ -210,22 +206,23 @@ describe('fs', () => {
       });
   });
 
-  it('copyFile() - callback', () => {
+  it('copyFile() - callback', callback => {
     const src = pathFn.join(tmpDir, 'test.txt');
     const dest = pathFn.join(tmpDir, 'a', 'b', 'test.txt');
     const body = 'foo';
 
-    const testerWrap = () => new Promise((resolve, reject) => {
-      fs.copyFile(src, dest, err => { err ? reject(err) : resolve(); });
-    });
+    fs.writeFile(src, body, tiferr(callback, () => {
+      fs.copyFile(src, dest, tiferr(callback, () => {
+        fs.readFile(dest, tiferr(callback, content => {
+          content.should.eql(body);
 
-    return fs.writeFile(src, body)
-      .then(testerWrap)
-      .then(() => fs.readFile(dest))
-      .then(content => {
-        content.should.eql(body);
-        return Promise.all([fs.unlink(src), fs.rmdir(pathFn.join(tmpDir, 'a'))]);
-      });
+          Promise.all([
+            fs.unlink(src),
+            fs.rmdir(pathFn.join(tmpDir, 'a'))
+          ]).asCallback(callback);
+        }));
+      }));
+    }));
   });
 
   it('copyFile() - src is required', () => {
@@ -262,17 +259,12 @@ describe('fs', () => {
     ]));
   });
 
-  it('copyDir() - callback', () => {
+  it('copyDir() - callback', callback => {
     const src = pathFn.join(tmpDir, 'a');
     const dest = pathFn.join(tmpDir, 'b');
 
-    const testerWrap = () => new Promise((resolve, reject) => {
-      fs.copyDir(src, dest, (err, files) => { err ? reject(err) : resolve(files); });
-    });
-
-    return createDummyFolder(src)
-      .then(testerWrap)
-      .then(files => {
+    createDummyFolder(src).asCallback(callback, () => {
+      fs.copyDir(src, dest, tiferr(callback, files => {
         files.should.have.members([
           'e.txt',
           'f.js',
@@ -285,11 +277,12 @@ describe('fs', () => {
           fs.readFile(pathFn.join(dest, 'f.js')),
           fs.readFile(pathFn.join(dest, 'folder', 'h.txt')),
           fs.readFile(pathFn.join(dest, 'folder', 'i.js'))
-        ]).then(result => {
+        ]).asCallback(tiferr(callback, result => {
           result.should.eql(['e', 'f', 'h', 'i']);
-          return Promise.all([fs.rmdir(src), fs.rmdir(dest)]);
-        });
-      });
+          Promise.all([fs.rmdir(src), fs.rmdir(dest)]).asCallback(callback);
+        }));
+      }));
+    });
   });
 
   it('copyDir() - src is required', () => {
@@ -370,16 +363,11 @@ describe('fs', () => {
       });
   });
 
-  it('listDir() - callback', () => {
+  it('listDir() - callback', callback => {
     const target = pathFn.join(tmpDir, 'test');
 
-    const testerWrap = () => new Promise((resolve, reject) => {
-      fs.listDir(target, (err, files) => { err ? reject(err) : resolve(files); });
-    });
-
-    return createDummyFolder(target)
-      .then(testerWrap)
-      .then(files => {
+    createDummyFolder(target).asCallback(callback, () => {
+      fs.listDir(target, tiferr(callback, files => {
         files.should.have.members([
           'e.txt',
           'f.js',
@@ -387,8 +375,9 @@ describe('fs', () => {
           pathFn.join('folder', 'i.js')
         ]);
 
-        return fs.rmdir(target);
-      });
+        fs.rmdir(target, callback);
+      }));
+    });
   });
 
   it('listDir() - path is required', () => {
@@ -491,20 +480,16 @@ describe('fs', () => {
       });
   });
 
-  it('readFile() - callback', () => {
+  it('readFile() - callback', callback => {
     const target = pathFn.join(tmpDir, 'test.txt');
     const body = 'test';
 
-    const testerWrap = () => new Promise((resolve, reject) => {
-      fs.readFile(target, (err, content) => { err ? reject(err) : resolve(content); });
-    });
-
-    return fs.writeFile(target, body)
-      .then(testerWrap)
-      .then(content => {
+    fs.writeFile(target, body, tiferr(callback, () => {
+      fs.readFile(target, tiferr(callback, content => {
         content.should.eql(body);
-        return fs.unlink(target);
-      });
+        fs.unlink(target, callback);
+      }));
+    }));
   });
 
   it('readFile() - path is required', () => {
@@ -613,16 +598,11 @@ describe('fs', () => {
       .then(() => fs.rmdir(target));
   });
 
-  it('emptyDir() - callback', () => {
+  it('emptyDir() - callback', callback => {
     const target = pathFn.join(tmpDir, 'test');
 
-    const testerWrap = () => new Promise((resolve, reject) => {
-      fs.emptyDir(target, (err, files) => { err ? reject(err) : resolve(files); });
-    });
-
-    return createDummyFolder(target)
-      .then(testerWrap)
-      .then(files => {
+    createDummyFolder(target).asCallback(tiferr(callback, () => {
+      fs.emptyDir(target, tiferr(callback, files => {
         files.should.have.members([
           'e.txt',
           'f.js',
@@ -640,9 +620,15 @@ describe('fs', () => {
           [pathFn.join(target, 'folder', 'h.txt'), false],
           [pathFn.join(target, 'folder', 'i.js'), false],
           [pathFn.join(target, 'folder', '.j'), true]
-        ], data => fs.exists(data[0]).then(exist => { exist.should.eql(data[1]); }));
-      })
-      .then(() => fs.rmdir(target));
+        ], data => {
+          return fs.exists(data[0]).then(exist => {
+            exist.should.eql(data[1]);
+          });
+        }).asCallback(tiferr(callback, () => {
+          fs.rmdir(target, callback);
+        }));
+      }));
+    }));
   });
 
   it('emptyDir() - path is required', () => {
@@ -856,19 +842,22 @@ describe('fs', () => {
       });
   });
 
-  it('rmdir() - callback', () => {
+  it('rmdir() - callback', callback => {
     const target = pathFn.join(tmpDir, 'test');
 
-    const testerWrap = () => new Promise((resolve, reject) => {
-      fs.rmdir(target, err => { err ? reject(err) : resolve(); });
-    });
-
-    return createDummyFolder(target)
-      .then(testerWrap)
-      .then(() => fs.exists(target))
-      .then(exist => {
-        exist.should.be.false;
-      });
+    createDummyFolder(target).asCallback(tiferr(callback, () => {
+      fs.rmdir(target, tiferr(callback, () => {
+        fs.exists(target, exist => {
+          try {
+            exist.should.be.false;
+          } catch (e) {
+            callback(e);
+            return;
+          }
+          callback();
+        });
+      }));
+    }));
   });
 
   it('rmdir() - path is required', () => {
@@ -941,22 +930,20 @@ describe('fs', () => {
     });
   });
 
-  it('ensurePath() - callback', () => {
+  it('ensurePath() - callback', callback => {
     const target = pathFn.join(tmpDir, 'test');
 
-    const testerWrap = () => new Promise((resolve, reject) => {
-      fs.ensurePath(pathFn.join(target, 'foo.txt'), (err, path) => { err ? reject(err) : resolve(path); });
-    });
-
-    return Promise.all([
+    Promise.all([
       fs.writeFile(pathFn.join(target, 'foo.txt')),
       fs.writeFile(pathFn.join(target, 'foo-1.txt')),
       fs.writeFile(pathFn.join(target, 'foo-2.md')),
       fs.writeFile(pathFn.join(target, 'bar.txt'))
-    ]).then(testerWrap).then(path => {
-      path.should.eql(pathFn.join(target, 'foo-2.txt'));
-      return fs.rmdir(target);
-    });
+    ]).asCallback(tiferr(callback, () => {
+      fs.ensurePath(pathFn.join(target, 'foo.txt'), tiferr(callback, path => {
+        path.should.eql(pathFn.join(target, 'foo-2.txt'));
+        fs.rmdir(target, callback);
+      }));
+    }));
   });
 
   it('ensurePath() - path is required', () => {
@@ -993,7 +980,7 @@ describe('fs', () => {
   it('ensureWriteStream()', () => {
     const target = pathFn.join(tmpDir, 'foo', 'bar.txt');
 
-    return fs.ensureWriteStream(target).then((stream) => {
+    return fs.ensureWriteStream(target).then(stream => {
       stream.path.should.eql(target);
 
       const streamPromise = new Promise((resolve, reject) => {
@@ -1005,23 +992,18 @@ describe('fs', () => {
     }).then(() => fs.unlink(target));
   });
 
-  it('ensureWriteStream() - callback', () => {
+  it('ensureWriteStream() - callback', callback => {
     const target = pathFn.join(tmpDir, 'foo', 'bar.txt');
 
-    const testerPromise = new Promise((resolve, reject) => {
-      fs.ensureWriteStream(target, (err, stream) => { err ? reject(err) : resolve(stream); });
-    });
-
-    return testerPromise.then(stream => {
+    fs.ensureWriteStream(target, tiferr(callback, stream => {
       stream.path.should.eql(target);
-
-      const streamPromise = new Promise((resolve, reject) => {
-        stream.on('finish', resolve).on('error', reject);
+      stream.on('error', callback);
+      stream.on('finish', () => {
+        fs.unlink(target, callback);
       });
 
       stream.end();
-      return streamPromise;
-    }).then(() => fs.unlink(target));
+    }));
   });
 
   it('ensureWriteStreamSync()', () => {
