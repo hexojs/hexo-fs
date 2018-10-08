@@ -11,8 +11,11 @@
   "directories": {
     "lib": "./lib"
   },
+  "files": [
+    "lib/fs.js"
+  ],
   "repository": "hexojs/hexo-fs",
-  "homepage": "http://hexo.io/",
+  "homepage": "https://hexo.io/",
   "keywords": [
     "file",
     "file system",
