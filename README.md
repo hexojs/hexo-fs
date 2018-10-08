@@ -19,7 +19,7 @@ $ npm install hexo-fs --save
 ## Usage
 
 ``` js
-var fs = require('hexo-fs');
+const fs = require('hexo-fs');
 ```
 
 > Some methods in the original fs module are not listed below, but they're available in hexo-fs.
@@ -157,5 +157,5 @@ Synchronous version of `fs.ensureWriteStream`.
 MIT
 
 [graceful-fs]: https://github.com/isaacs/node-graceful-fs
-[Hexo]: http://hexo.io/
+[Hexo]: https://hexo.io/
 [chokidar]: https://github.com/paulmillr/chokidar
