@@ -30,7 +30,7 @@
   "dependencies": {
     "bluebird": "^3.5.1",
     "chokidar": "^2.0.4",
-    "escape-string-regexp": "^1.0.5",
+    "escape-string-regexp": "^2.0.0",
     "graceful-fs": "^4.1.11"
   },
   "devDependencies": {
