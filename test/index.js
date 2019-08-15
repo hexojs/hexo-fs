@@ -281,30 +281,23 @@ describe('fs', () => {
     const src = pathFn.join(tmpDir, 'a');
     const dest = pathFn.join(tmpDir, 'b');
 
+    const filenames = [
+      pathFn.join('.hidden', 'a.txt'),
+      pathFn.join('.hidden', 'b.js'),
+      pathFn.join('.hidden', 'c', 'd'),
+      'e.txt',
+      'f.js',
+      '.g',
+      pathFn.join('folder', 'h.txt'),
+      pathFn.join('folder', 'i.js'),
+      pathFn.join('folder', '.j')
+    ];
+
     return createDummyFolder(src)
       .then(() => fs.copyDir(src, dest, {ignoreHidden: false}))
-      .should.eventually.have.members([
-        pathFn.join('.hidden', 'a.txt'),
-        pathFn.join('.hidden', 'b.js'),
-        pathFn.join('.hidden', 'c', 'd'),
-        'e.txt',
-        'f.js',
-        '.g',
-        pathFn.join('folder', 'h.txt'),
-        pathFn.join('folder', 'i.js'),
-        pathFn.join('folder', '.j')
-      ])
-      .then(() => Promise.all([
-        fs.readFile(pathFn.join(dest, '.hidden', 'a.txt')),
-        fs.readFile(pathFn.join(dest, '.hidden', 'b.js')),
-        fs.readFile(pathFn.join(dest, '.hidden', 'c', 'd')),
-        fs.readFile(pathFn.join(dest, 'e.txt')),
-        fs.readFile(pathFn.join(dest, 'f.js')),
-        fs.readFile(pathFn.join(dest, '.g')),
-        fs.readFile(pathFn.join(dest, 'folder', 'h.txt')),
-        fs.readFile(pathFn.join(dest, 'folder', 'i.js')),
-        fs.readFile(pathFn.join(dest, 'folder', '.j'))
-      ]))
+      .then(files => files.should.have.members(filenames))
+      .return(filenames)
+      .map(path => fs.readFile(pathFn.join(dest, path)))
       .should.become(['a', 'b', 'd', 'e', 'f', 'g', 'h', 'i', 'j'])
       .then(() => Promise.all([fs.rmdir(src), fs.rmdir(dest)]));
   });
@@ -313,13 +306,13 @@ describe('fs', () => {
     const src = pathFn.join(tmpDir, 'a');
     const dest = pathFn.join(tmpDir, 'b');
 
+    const filenames = ['e.txt', pathFn.join('folder', 'h.txt')];
+
     return createDummyFolder(src)
       .then(() => fs.copyDir(src, dest, {ignorePattern: /\.js/}))
-      .should.eventually.have.members(['e.txt', pathFn.join('folder', 'h.txt')])
-      .then(() => Promise.all([
-        fs.readFile(pathFn.join(dest, 'e.txt')),
-        fs.readFile(pathFn.join(dest, 'folder', 'h.txt'))
-      ]))
+      .then(files => files.should.have.members(filenames))
+      .return(filenames)
+      .map(path => fs.readFile(pathFn.join(dest, path)))
       .should.become(['e', 'h'])
       .then(() => Promise.all([fs.rmdir(src), fs.rmdir(dest)]));
   });
@@ -523,14 +516,10 @@ describe('fs', () => {
 
     return fs.writeFile(target, '')
       .then(() => fs.exists(target))
-      .then(exist => {
-        exist.should.eql(true);
-        return fs.unlink(target);
-      })
+      .should.become(true)
+      .then(() => fs.unlink(target))
       .then(() => fs.exists(target))
-      .then(exist => {
-        exist.should.eql(false);
-      });
+      .should.become(false);
   });
 
   it('emptyDir()', () => {
@@ -600,34 +589,23 @@ describe('fs', () => {
   it('emptyDir() - ignoreHidden off', () => {
     const target = pathFn.join(tmpDir, 'test');
 
+    const filenames = [
+      pathFn.join('.hidden', 'a.txt'),
+      pathFn.join('.hidden', 'b.js'),
+      pathFn.join('.hidden', 'c', 'd'),
+      'e.txt',
+      'f.js',
+      '.g',
+      pathFn.join('folder', 'h.txt'),
+      pathFn.join('folder', 'i.js'),
+      pathFn.join('folder', '.j')
+    ];
+
     return createDummyFolder(target)
       .then(() => fs.emptyDir(target, {ignoreHidden: false}))
-      .then(files => {
-        files.should.have.members([
-          pathFn.join('.hidden', 'a.txt'),
-          pathFn.join('.hidden', 'b.js'),
-          pathFn.join('.hidden', 'c', 'd'),
-          'e.txt',
-          'f.js',
-          '.g',
-          pathFn.join('folder', 'h.txt'),
-          pathFn.join('folder', 'i.js'),
-          pathFn.join('folder', '.j')
-        ]);
-
-        return [
-          pathFn.join(target, '.hidden', 'a.txt'),
-          pathFn.join(target, '.hidden', 'b.js'),
-          pathFn.join(target, '.hidden', 'c', 'd'),
-          pathFn.join(target, 'e.txt'),
-          pathFn.join(target, 'f.js'),
-          pathFn.join(target, '.g'),
-          pathFn.join(target, 'folder', 'h.txt'),
-          pathFn.join(target, 'folder', 'i.js'),
-          pathFn.join(target, 'folder', '.j')
-        ];
-      })
-      .map(data => fs.exists(data).should.become(false))
+      .then(files => files.should.have.members(filenames))
+      .return(filenames)
+      .map(path => fs.exists(pathFn.join(target, path)).should.become(false))
       .then(() => fs.rmdir(target));
   });
 
@@ -636,8 +614,8 @@ describe('fs', () => {
 
     return createDummyFolder(target)
       .then(() => fs.emptyDir(target, {ignorePattern: /\.js/}))
-      .should.eventually.have.members(['e.txt', pathFn.join('folder', 'h.txt')])
-      .then(() => [
+      .then(files => files.should.have.members(['e.txt', pathFn.join('folder', 'h.txt')]))
+      .thenReturn([
         [pathFn.join(target, '.hidden', 'a.txt'), true],
         [pathFn.join(target, '.hidden', 'b.js'), true],
         [pathFn.join(target, '.hidden', 'c', 'd'), true],
@@ -648,7 +626,7 @@ describe('fs', () => {
         [pathFn.join(target, 'folder', 'i.js'), true],
         [pathFn.join(target, 'folder', '.j'), true]
       ])
-      .map(data => fs.exists(data[0]).then(exist => { exist.should.eql(data[1]); }))
+      .map(data => fs.exists(data[0]).should.become(data[1]))
       .then(() => fs.rmdir(target));
   });
 
@@ -669,7 +647,7 @@ describe('fs', () => {
         [pathFn.join(target, 'folder', 'i.js'), true],
         [pathFn.join(target, 'folder', '.j'), true]
       ])
-      .map(data => fs.exists(data[0]).then(exist => { exist.should.eql(data[1]); }))
+      .map(data => fs.exists(data[0]).should.become(data[1]))
       .then(() => fs.rmdir(target));
   });
 
@@ -698,7 +676,7 @@ describe('fs', () => {
           [pathFn.join(target, 'folder', '.j'), true]
         ];
       })
-      .map(data => fs.exists(data[0]).then(exist => { exist.should.eql(data[1]); }))
+      .map(data => fs.exists(data[0]).should.become(data[1]))
       .then(() => fs.rmdir(target));
   });
 
@@ -709,34 +687,25 @@ describe('fs', () => {
   it('emptyDirSync() - ignoreHidden off', () => {
     const target = pathFn.join(tmpDir, 'test');
 
+    const filenames = [
+      pathFn.join('.hidden', 'a.txt'),
+      pathFn.join('.hidden', 'b.js'),
+      pathFn.join('.hidden', 'c', 'd'),
+      'e.txt',
+      'f.js',
+      '.g',
+      pathFn.join('folder', 'h.txt'),
+      pathFn.join('folder', 'i.js'),
+      pathFn.join('folder', '.j')
+    ];
+
     return createDummyFolder(target)
       .then(() => {
         const files = fs.emptyDirSync(target, {ignoreHidden: false});
-        files.should.have.members([
-          pathFn.join('.hidden', 'a.txt'),
-          pathFn.join('.hidden', 'b.js'),
-          pathFn.join('.hidden', 'c', 'd'),
-          'e.txt',
-          'f.js',
-          '.g',
-          pathFn.join('folder', 'h.txt'),
-          pathFn.join('folder', 'i.js'),
-          pathFn.join('folder', '.j')
-        ]);
-
-        return [
-          pathFn.join(target, '.hidden', 'a.txt'),
-          pathFn.join(target, '.hidden', 'b.js'),
-          pathFn.join(target, '.hidden', 'c', 'd'),
-          pathFn.join(target, 'e.txt'),
-          pathFn.join(target, 'f.js'),
-          pathFn.join(target, '.g'),
-          pathFn.join(target, 'folder', 'h.txt'),
-          pathFn.join(target, 'folder', 'i.js'),
-          pathFn.join(target, 'folder', '.j')
-        ];
+        files.should.have.members(filenames);
+        return filenames;
       })
-      .map(data => fs.exists(data).should.become(false))
+      .map(path => fs.exists(pathFn.join(target, path)).should.become(false))
       .then(() => fs.rmdir(target));
   });
 
@@ -862,12 +831,9 @@ describe('fs', () => {
   it('ensurePath() - file exists', () => {
     const target = pathFn.join(tmpDir, 'test');
 
-    return Promise.all([
-      fs.writeFile(pathFn.join(target, 'foo.txt')),
-      fs.writeFile(pathFn.join(target, 'foo-1.txt')),
-      fs.writeFile(pathFn.join(target, 'foo-2.md')),
-      fs.writeFile(pathFn.join(target, 'bar.txt'))
-    ]).then(() => fs.ensurePath(pathFn.join(target, 'foo.txt')))
+    return Promise
+      .map(['foo.txt', 'foo-1.txt', 'foo-2.md', 'bar.txt'], path => fs.writeFile(pathFn.join(target, path)))
+      .then(() => fs.ensurePath(pathFn.join(target, 'foo.txt')))
       .should.become(pathFn.join(target, 'foo-2.txt'))
       .then(() => fs.rmdir(target));
   });
