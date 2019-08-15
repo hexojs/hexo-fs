@@ -7,24 +7,25 @@ const Promise = require('bluebird');
 const fs = require('../lib/fs');
 const { tiferr } = require('iferr');
 
-function createDummyFolder(path) {
-  return Promise.all([
+function createDummyFolder(path, callback) {
+  const filesMap = {
     // Normal files in a hidden folder
-    fs.writeFile(join(path, '.hidden', 'a.txt'), 'a'),
-    fs.writeFile(join(path, '.hidden', 'b.js'), 'b'),
+    [join('.hidden', 'a.txt')]: 'a',
+    [join('.hidden', 'b.js')]: 'b',
     // Normal folder in a hidden folder
-    fs.writeFile(join(path, '.hidden', 'c', 'd'), 'd'),
+    [join('.hidden', 'c', 'd')]: 'd',
     // Top-class files
-    fs.writeFile(join(path, 'e.txt'), 'e'),
-    fs.writeFile(join(path, 'f.js'), 'f'),
+    'e.txt': 'e',
+    'f.js': 'f',
     // A hidden file
-    fs.writeFile(join(path, '.g'), 'g'),
+    '.g': 'g',
     // Files in a normal folder
-    fs.writeFile(join(path, 'folder', 'h.txt'), 'h'),
-    fs.writeFile(join(path, 'folder', 'i.js'), 'i'),
+    [join('folder', 'h.txt')]: 'h',
+    [join('folder', 'i.js')]: 'i',
     // A hidden files in a normal folder
-    fs.writeFile(join(path, 'folder', '.j'), 'j')
-  ]);
+    [join('folder', '.j')]: 'j'
+  };
+  return Promise.map(Object.keys(filesMap), key => fs.writeFile(join(path, key), filesMap[key])).asCallback(callback);
 }
 
 describe('fs', () => {
@@ -225,48 +226,46 @@ describe('fs', () => {
     const src = join(tmpDir, 'a');
     const dest = join(tmpDir, 'b');
 
+    const filenames = [
+      'e.txt',
+      'f.js',
+      join('folder', 'h.txt'),
+      join('folder', 'i.js')
+    ];
+
     return createDummyFolder(src)
       .then(() => fs.copyDir(src, dest))
-      .should.eventually.have.members([
-        'e.txt',
-        'f.js',
-        join('folder', 'h.txt'),
-        join('folder', 'i.js')
-      ])
-      .then(() => Promise.all([
-        fs.readFile(join(dest, 'e.txt')),
-        fs.readFile(join(dest, 'f.js')),
-        fs.readFile(join(dest, 'folder', 'h.txt')),
-        fs.readFile(join(dest, 'folder', 'i.js'))
-      ]))
-      .should.become(['e', 'f', 'h', 'i'])
-      .then(() => Promise.all([fs.rmdir(src), fs.rmdir(dest)]));
+      .then(files => files.should.have.members(filenames))
+      .thenReturn(filenames)
+      .map(path => fs.readFile(join(dest, path)))
+      .then(result => {
+        result.should.eql(['e', 'f', 'h', 'i']);
+        return Promise.all([fs.rmdir(src), fs.rmdir(dest)]);
+      });
   });
 
   it('copyDir() - callback', callback => {
     const src = join(tmpDir, 'a');
     const dest = join(tmpDir, 'b');
 
-    createDummyFolder(src).asCallback(callback, () => {
-      fs.copyDir(src, dest, tiferr(callback, files => {
-        files.should.have.members([
-          'e.txt',
-          'f.js',
-          join('folder', 'h.txt'),
-          join('folder', 'i.js')
-        ]);
+    const finenames = [
+      'e.txt',
+      'f.js',
+      join('folder', 'h.txt'),
+      join('folder', 'i.js')
+    ];
 
-        return Promise.all([
-          fs.readFile(join(dest, 'e.txt')),
-          fs.readFile(join(dest, 'f.js')),
-          fs.readFile(join(dest, 'folder', 'h.txt')),
-          fs.readFile(join(dest, 'folder', 'i.js'))
-        ]).asCallback(tiferr(callback, result => {
-          result.should.eql(['e', 'f', 'h', 'i']);
-          Promise.all([fs.rmdir(src), fs.rmdir(dest)]).asCallback(callback);
+    createDummyFolder(src, tiferr(callback, () => {
+      fs.copyDir(src, dest, tiferr(callback, files => {
+        files.should.have.members(finenames);
+        fs.rmdir(src, tiferr(callback, () => {
+          Promise.map(finenames, path => fs.readFile(join(dest, path))).asCallback(tiferr(callback, result => {
+            result.should.eql(['e', 'f', 'h', 'i']);
+            fs.rmdir(dest, callback);
+          }));
         }));
       }));
-    });
+    }));
   });
 
   it('copyDir() - src is required', () => {
@@ -334,18 +333,19 @@ describe('fs', () => {
   it('listDir() - callback', callback => {
     const target = join(tmpDir, 'test');
 
-    createDummyFolder(target).asCallback(callback, () => {
-      fs.listDir(target, tiferr(callback, files => {
-        files.should.have.members([
-          'e.txt',
-          'f.js',
-          join('folder', 'h.txt'),
-          join('folder', 'i.js')
-        ]);
+    const filenames = [
+      'e.txt',
+      'f.js',
+      join('folder', 'h.txt'),
+      join('folder', 'i.js')
+    ];
 
+    createDummyFolder(target, tiferr(callback, () => {
+      fs.listDir(target, tiferr(callback, paths => {
+        paths.should.have.members(filenames);
         fs.rmdir(target, callback);
       }));
-    });
+    }));
   });
 
   it('listDir() - path is required', () => {
@@ -355,19 +355,21 @@ describe('fs', () => {
   it('listDir() - ignoreHidden off', () => {
     const target = join(tmpDir, 'test');
 
+    const filenames = [
+      join('.hidden', 'a.txt'),
+      join('.hidden', 'b.js'),
+      join('.hidden', 'c', 'd'),
+      'e.txt',
+      'f.js',
+      '.g',
+      join('folder', 'h.txt'),
+      join('folder', 'i.js'),
+      join('folder', '.j')
+    ];
+
     return createDummyFolder(target)
       .then(() => fs.listDir(target, {ignoreHidden: false}))
-      .should.eventually.have.members([
-        join('.hidden', 'a.txt'),
-        join('.hidden', 'b.js'),
-        join('.hidden', 'c', 'd'),
-        'e.txt',
-        'f.js',
-        '.g',
-        join('folder', 'h.txt'),
-        join('folder', 'i.js'),
-        join('folder', '.j')
-      ])
+      .should.eventually.have.members(filenames)
       .then(() => fs.rmdir(target));
   });
 
@@ -383,15 +385,16 @@ describe('fs', () => {
   it('listDirSync()', () => {
     const target = join(tmpDir, 'test');
 
+    const filenames = [
+      'e.txt',
+      'f.js',
+      join('folder', 'h.txt'),
+      join('folder', 'i.js')
+    ];
+
     return createDummyFolder(target).then(() => {
       const files = fs.listDirSync(target);
-      files.should.have.members([
-        'e.txt',
-        'f.js',
-        join('folder', 'h.txt'),
-        join('folder', 'i.js')
-      ]);
-
+      files.should.have.members(filenames);
       return fs.rmdir(target);
     });
   });
@@ -403,20 +406,21 @@ describe('fs', () => {
   it('listDirSync() - ignoreHidden off', () => {
     const target = join(tmpDir, 'test');
 
+    const filenames = [
+      join('.hidden', 'a.txt'),
+      join('.hidden', 'b.js'),
+      join('.hidden', 'c', 'd'),
+      'e.txt',
+      'f.js',
+      '.g',
+      join('folder', 'h.txt'),
+      join('folder', 'i.js'),
+      join('folder', '.j')
+    ];
+
     return createDummyFolder(target).then(() => {
       const files = fs.listDirSync(target, {ignoreHidden: false});
-      files.should.have.members([
-        join('.hidden', 'a.txt'),
-        join('.hidden', 'b.js'),
-        join('.hidden', 'c', 'd'),
-        'e.txt',
-        'f.js',
-        '.g',
-        join('folder', 'h.txt'),
-        join('folder', 'i.js'),
-        join('folder', '.j')
-      ]);
-
+      files.should.have.members(filenames);
       return fs.rmdir(target);
     });
   });
@@ -525,6 +529,18 @@ describe('fs', () => {
   it('emptyDir()', () => {
     const target = join(tmpDir, 'test');
 
+    const checkExistsMap = {
+      [join('.hidden', 'a.txt')]: true,
+      [join('.hidden', 'b.js')]: true,
+      [join('.hidden', 'c', 'd')]: true,
+      'e.txt': false,
+      'f.js': false,
+      '.g': true,
+      [join('folder', 'h.txt')]: false,
+      [join('folder', 'i.js')]: false,
+      [join('folder', '.j')]: true
+    };
+
     return createDummyFolder(target)
       .then(() => fs.emptyDir(target))
       .then(files => {
@@ -535,26 +551,28 @@ describe('fs', () => {
           join('folder', 'i.js')
         ]);
 
-        return [
-          [join(target, '.hidden', 'a.txt'), true],
-          [join(target, '.hidden', 'b.js'), true],
-          [join(target, '.hidden', 'c', 'd'), true],
-          [join(target, 'e.txt'), false],
-          [join(target, 'f.js'), false],
-          [join(target, '.g'), true],
-          [join(target, 'folder', 'h.txt'), false],
-          [join(target, 'folder', 'i.js'), false],
-          [join(target, 'folder', '.j'), true]
-        ];
+        return Object.keys(checkExistsMap);
       })
-      .map(data => fs.exists(data[0]).should.become(data[1]))
+      .map(path => fs.exists(join(target, path)).should.become(checkExistsMap[path]))
       .then(() => fs.rmdir(target));
   });
 
   it('emptyDir() - callback', callback => {
     const target = join(tmpDir, 'test');
 
-    createDummyFolder(target).asCallback(tiferr(callback, () => {
+    const checkExistsMap = {
+      [join('.hidden', 'a.txt')]: true,
+      [join('.hidden', 'b.js')]: true,
+      [join('.hidden', 'c', 'd')]: true,
+      'e.txt': false,
+      'f.js': false,
+      '.g': true,
+      [join('folder', 'h.txt')]: false,
+      [join('folder', 'i.js')]: false,
+      [join('folder', '.j')]: true
+    };
+
+    createDummyFolder(target, tiferr(callback, () => {
       fs.emptyDir(target, tiferr(callback, files => {
         files.should.have.members([
           'e.txt',
@@ -563,18 +581,8 @@ describe('fs', () => {
           join('folder', 'i.js')
         ]);
 
-        return Promise.map([
-          [join(target, '.hidden', 'a.txt'), true],
-          [join(target, '.hidden', 'b.js'), true],
-          [join(target, '.hidden', 'c', 'd'), true],
-          [join(target, 'e.txt'), false],
-          [join(target, 'f.js'), false],
-          [join(target, '.g'), true],
-          [join(target, 'folder', 'h.txt'), false],
-          [join(target, 'folder', 'i.js'), false],
-          [join(target, 'folder', '.j'), true]
-        ], data => {
-          return fs.exists(data[0]).should.become(data[1]);
+        return Promise.map(Object.keys(checkExistsMap), path => {
+          return fs.exists(join(target, path)).should.become(checkExistsMap[path]);
         }).asCallback(tiferr(callback, () => {
           fs.rmdir(target, callback);
         }));
@@ -612,47 +620,63 @@ describe('fs', () => {
   it('emptyDir() - ignorePattern', () => {
     const target = join(tmpDir, 'test');
 
+    const checkExistsMap = {
+      [join('.hidden', 'a.txt')]: true,
+      [join('.hidden', 'b.js')]: true,
+      [join('.hidden', 'c', 'd')]: true,
+      'e.txt': false,
+      'f.js': true,
+      '.g': true,
+      [join('folder', 'h.txt')]: false,
+      [join('folder', 'i.js')]: true,
+      [join('folder', '.j')]: true
+    };
+
     return createDummyFolder(target)
       .then(() => fs.emptyDir(target, {ignorePattern: /\.js/}))
       .then(files => files.should.have.members(['e.txt', join('folder', 'h.txt')]))
-      .thenReturn([
-        [join(target, '.hidden', 'a.txt'), true],
-        [join(target, '.hidden', 'b.js'), true],
-        [join(target, '.hidden', 'c', 'd'), true],
-        [join(target, 'e.txt'), false],
-        [join(target, 'f.js'), true],
-        [join(target, '.g'), true],
-        [join(target, 'folder', 'h.txt'), false],
-        [join(target, 'folder', 'i.js'), true],
-        [join(target, 'folder', '.j'), true]
-      ])
-      .map(data => fs.exists(data[0]).should.become(data[1]))
+      .return(Object.keys(checkExistsMap))
+      .map(path => fs.exists(join(target, path)).should.become(checkExistsMap[path]))
       .then(() => fs.rmdir(target));
   });
 
   it('emptyDir() - exclude', () => {
     const target = join(tmpDir, 'test');
 
+    const checkExistsMap = {
+      [join('.hidden', 'a.txt')]: true,
+      [join('.hidden', 'b.js')]: true,
+      [join('.hidden', 'c', 'd')]: true,
+      'e.txt': true,
+      'f.js': false,
+      '.g': true,
+      [join('folder', 'h.txt')]: false,
+      [join('folder', 'i.js')]: true,
+      [join('folder', '.j')]: true
+    };
+
     return createDummyFolder(target)
       .then(() => fs.emptyDir(target, {exclude: ['e.txt', join('folder', 'i.js')]}))
-      .should.eventually.have.members(['f.js', join('folder', 'h.txt')])
-      .then(() => [
-        [join(target, '.hidden', 'a.txt'), true],
-        [join(target, '.hidden', 'b.js'), true],
-        [join(target, '.hidden', 'c', 'd'), true],
-        [join(target, 'e.txt'), true],
-        [join(target, 'f.js'), false],
-        [join(target, '.g'), true],
-        [join(target, 'folder', 'h.txt'), false],
-        [join(target, 'folder', 'i.js'), true],
-        [join(target, 'folder', '.j'), true]
-      ])
-      .map(data => fs.exists(data[0]).should.become(data[1]))
+      .then(files => files.should.have.members(['f.js', join('folder', 'h.txt')]))
+      .return(Object.keys(checkExistsMap))
+      .map(path => fs.exists(join(target, path)).should.become(checkExistsMap[path]))
       .then(() => fs.rmdir(target));
   });
 
   it('emptyDirSync()', () => {
     const target = join(tmpDir, 'test');
+
+    const checkExistsMap = {
+      [join('.hidden', 'a.txt')]: true,
+      [join('.hidden', 'b.js')]: true,
+      [join('.hidden', 'c', 'd')]: true,
+      'e.txt': false,
+      'f.js': false,
+      '.g': true,
+      [join('folder', 'h.txt')]: false,
+      [join('folder', 'i.js')]: false,
+      [join('folder', '.j')]: true
+    };
 
     return createDummyFolder(target)
       .then(() => {
@@ -664,19 +688,9 @@ describe('fs', () => {
           join('folder', 'i.js')
         ]);
 
-        return [
-          [join(target, '.hidden', 'a.txt'), true],
-          [join(target, '.hidden', 'b.js'), true],
-          [join(target, '.hidden', 'c', 'd'), true],
-          [join(target, 'e.txt'), false],
-          [join(target, 'f.js'), false],
-          [join(target, '.g'), true],
-          [join(target, 'folder', 'h.txt'), false],
-          [join(target, 'folder', 'i.js'), false],
-          [join(target, 'folder', '.j'), true]
-        ];
+        return Object.keys(checkExistsMap);
       })
-      .map(data => fs.exists(data[0]).should.become(data[1]))
+      .map(path => fs.exists(join(target, path)).should.become(checkExistsMap[path]))
       .then(() => fs.rmdir(target));
   });
 
@@ -712,48 +726,52 @@ describe('fs', () => {
   it('emptyDirSync() - ignorePattern', () => {
     const target = join(tmpDir, 'test');
 
+    const checkExistsMap = {
+      [join('.hidden', 'a.txt')]: true,
+      [join('.hidden', 'b.js')]: true,
+      [join('.hidden', 'c', 'd')]: true,
+      'e.txt': false,
+      'f.js': true,
+      '.g': true,
+      [join('folder', 'h.txt')]: false,
+      [join('folder', 'i.js')]: true,
+      [join('folder', '.j')]: true
+    };
+
     return createDummyFolder(target)
       .then(() => {
         const files = fs.emptyDirSync(target, {ignorePattern: /\.js/});
         files.should.have.members(['e.txt', join('folder', 'h.txt')]);
 
-        return [
-          [join(target, '.hidden', 'a.txt'), true],
-          [join(target, '.hidden', 'b.js'), true],
-          [join(target, '.hidden', 'c', 'd'), true],
-          [join(target, 'e.txt'), false],
-          [join(target, 'f.js'), true],
-          [join(target, '.g'), true],
-          [join(target, 'folder', 'h.txt'), false],
-          [join(target, 'folder', 'i.js'), true],
-          [join(target, 'folder', '.j'), true]
-        ];
+        return Object.keys(checkExistsMap);
       })
-      .map(data => fs.exists(data[0]).should.become(data[1]))
+      .map(path => fs.exists(join(target, path)).should.become(checkExistsMap[path]))
       .then(() => fs.rmdir(target));
   });
 
   it('emptyDirSync() - exclude', () => {
     const target = join(tmpDir, 'test');
 
+    const checkExistsMap = {
+      [join('.hidden', 'a.txt')]: true,
+      [join('.hidden', 'b.js')]: true,
+      [join('.hidden', 'c', 'd')]: true,
+      'e.txt': true,
+      'f.js': false,
+      '.g': true,
+      [join('folder', 'h.txt')]: false,
+      [join('folder', 'i.js')]: true,
+      [join('folder', '.j')]: true
+    };
+
     return createDummyFolder(target)
       .then(() => {
         const files = fs.emptyDirSync(target, {exclude: ['e.txt', join('folder', 'i.js')]});
         files.should.have.members(['f.js', join('folder', 'h.txt')]);
 
-        return [
-          [join(target, '.hidden', 'a.txt'), true],
-          [join(target, '.hidden', 'b.js'), true],
-          [join(target, '.hidden', 'c', 'd'), true],
-          [join(target, 'e.txt'), true],
-          [join(target, 'f.js'), false],
-          [join(target, '.g'), true],
-          [join(target, 'folder', 'h.txt'), false],
-          [join(target, 'folder', 'i.js'), true],
-          [join(target, 'folder', '.j'), true]
-        ];
+        return Object.keys(checkExistsMap);
       })
-      .map(data => fs.exists(data[0]).should.become(data[1]))
+      .map(path => fs.exists(join(target, path)).should.become(checkExistsMap[path]))
       .then(() => fs.rmdir(target));
   });
 
@@ -769,7 +787,7 @@ describe('fs', () => {
   it('rmdir() - callback', callback => {
     const target = join(tmpDir, 'test');
 
-    createDummyFolder(target).asCallback(tiferr(callback, () => {
+    createDummyFolder(target, tiferr(callback, () => {
       fs.rmdir(target, tiferr(callback, () => {
         fs.exists(target, exist => {
           try {
@@ -830,9 +848,9 @@ describe('fs', () => {
 
   it('ensurePath() - file exists', () => {
     const target = join(tmpDir, 'test');
+    const filenames = ['foo.txt', 'foo-1.txt', 'foo-2.md', 'bar.txt'];
 
-    return Promise
-      .map(['foo.txt', 'foo-1.txt', 'foo-2.md', 'bar.txt'], path => fs.writeFile(join(target, path)))
+    return Promise.map(filenames, path => fs.writeFile(join(target, path)))
       .then(() => fs.ensurePath(join(target, 'foo.txt')))
       .should.become(join(target, 'foo-2.txt'))
       .then(() => fs.rmdir(target));
@@ -845,13 +863,9 @@ describe('fs', () => {
 
   it('ensurePath() - callback', callback => {
     const target = join(tmpDir, 'test');
+    const filenames = ['foo.txt', 'foo-1.txt', 'foo-2.md', 'bar.txt'];
 
-    Promise.all([
-      fs.writeFile(join(target, 'foo.txt')),
-      fs.writeFile(join(target, 'foo-1.txt')),
-      fs.writeFile(join(target, 'foo-2.md')),
-      fs.writeFile(join(target, 'bar.txt'))
-    ]).asCallback(tiferr(callback, () => {
+    Promise.map(filenames, path => fs.writeFile(join(target, path))).asCallback(tiferr(callback, () => {
       fs.ensurePath(join(target, 'foo.txt'), tiferr(callback, path => {
         path.should.eql(join(target, 'foo-2.txt'));
         fs.rmdir(target, callback);
@@ -865,13 +879,9 @@ describe('fs', () => {
 
   it('ensurePathSync() - file exists', () => {
     const target = join(tmpDir, 'test');
+    const filenames = ['foo.txt', 'foo-1.txt', 'foo-2.md', 'bar.txt'];
 
-    return Promise.all([
-      fs.writeFile(join(target, 'foo.txt')),
-      fs.writeFile(join(target, 'foo-1.txt')),
-      fs.writeFile(join(target, 'foo-2.md')),
-      fs.writeFile(join(target, 'bar.txt'))
-    ]).then(() => {
+    return Promise.map(filenames, path => fs.writeFile(join(target, path))).then(() => {
       const path = fs.ensurePathSync(join(target, 'foo.txt'));
       path.should.eql(join(target, 'foo-2.txt'));
 
