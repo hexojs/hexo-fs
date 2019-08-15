@@ -1,6 +1,6 @@
 'use strict';
 
-require('chai').should();
+require('chai').use(require('chai-as-promised')).should();
 
 const pathFn = require('path');
 const Promise = require('bluebird');
@@ -34,9 +34,7 @@ describe('fs', () => {
 
   after(() => fs.rmdir(tmpDir));
 
-  it('exists()', () => fs.exists(tmpDir).then(exist => {
-    exist.should.be.true;
-  }));
+  it('exists()', () => fs.exists(tmpDir).should.become(true));
 
   it('exists() - callback', callback => {
     fs.exists(tmpDir, exist => {
@@ -57,10 +55,10 @@ describe('fs', () => {
   it('mkdirs()', () => {
     const target = pathFn.join(tmpDir, 'a', 'b', 'c');
 
-    return fs.mkdirs(target).then(() => fs.exists(target)).then(exist => {
-      exist.should.be.true;
-      return fs.rmdir(pathFn.join(tmpDir, 'a'));
-    });
+    return fs.mkdirs(target)
+      .then(() => fs.exists(target))
+      .should.become(true)
+      .then(() => fs.rmdir(pathFn.join(tmpDir, 'a')));
   });
 
   it('mkdirs() - callback', callback => {
@@ -83,10 +81,9 @@ describe('fs', () => {
 
     fs.mkdirsSync(target);
 
-    return fs.exists(target).then(exist => {
-      exist.should.be.true;
-      return fs.rmdir(pathFn.join(tmpDir, 'a'));
-    });
+    return fs.exists(target)
+      .should.become(true)
+      .then(() => fs.rmdir(pathFn.join(tmpDir, 'a')));
   });
 
   it('mkdirsSync() - path is required', () => {
@@ -99,10 +96,8 @@ describe('fs', () => {
 
     return fs.writeFile(target, body)
       .then(() => fs.readFile(target))
-      .then(content => {
-        content.should.eql(body);
-        return fs.rmdir(pathFn.join(tmpDir, 'a'));
-      });
+      .should.become(body)
+      .then(() => fs.rmdir(pathFn.join(tmpDir, 'a')));
   });
 
   it('writeFile() - callback', callback => {
@@ -127,10 +122,9 @@ describe('fs', () => {
 
     fs.writeFileSync(target, body);
 
-    return fs.readFile(target).then(content => {
-      content.should.eql(body);
-      return fs.rmdir(pathFn.join(tmpDir, 'a'));
-    });
+    return fs.readFile(target)
+      .should.become(body)
+      .then(() => fs.rmdir(pathFn.join(tmpDir, 'a')));
   });
 
   it('writeFileSync() - path is required', () => {
@@ -145,10 +139,8 @@ describe('fs', () => {
     return fs.writeFile(target, body)
       .then(() => fs.appendFile(target, body2))
       .then(() => fs.readFile(target))
-      .then(content => {
-        content.should.eql(body + body2);
-        return fs.rmdir(pathFn.join(tmpDir, 'a'));
-      });
+      .should.become(body + body2)
+      .then(() => fs.rmdir(pathFn.join(tmpDir, 'a')));
   });
 
   it('appendFile() - callback', callback => {
@@ -178,8 +170,7 @@ describe('fs', () => {
     return fs.writeFile(target, body).then(() => {
       fs.appendFileSync(target, body2);
       return fs.readFile(target);
-    }).then(content => {
-      content.should.eql(body + body2);
+    }).should.become(body + body2).then(() => {
       return fs.rmdir(pathFn.join(tmpDir, 'a'));
     });
   });
@@ -196,14 +187,11 @@ describe('fs', () => {
     return fs.writeFile(src, body)
       .then(() => fs.copyFile(src, dest))
       .then(() => fs.readFile(dest))
-      .then(content => {
-        content.should.eql(body);
-
-        return Promise.all([
-          fs.unlink(src),
-          fs.rmdir(pathFn.join(tmpDir, 'a'))
-        ]);
-      });
+      .should.become(body)
+      .then(() => Promise.all([
+        fs.unlink(src),
+        fs.rmdir(pathFn.join(tmpDir, 'a'))
+      ]));
   });
 
   it('copyFile() - callback', callback => {
@@ -237,26 +225,22 @@ describe('fs', () => {
     const src = pathFn.join(tmpDir, 'a');
     const dest = pathFn.join(tmpDir, 'b');
 
-    return createDummyFolder(src).then(() => fs.copyDir(src, dest)).then(files => {
-      files.should.have.members([
+    return createDummyFolder(src)
+      .then(() => fs.copyDir(src, dest))
+      .should.eventually.have.members([
         'e.txt',
         'f.js',
         pathFn.join('folder', 'h.txt'),
         pathFn.join('folder', 'i.js')
-      ]);
-
-      return Promise.all([
+      ])
+      .then(() => Promise.all([
         fs.readFile(pathFn.join(dest, 'e.txt')),
         fs.readFile(pathFn.join(dest, 'f.js')),
         fs.readFile(pathFn.join(dest, 'folder', 'h.txt')),
         fs.readFile(pathFn.join(dest, 'folder', 'i.js'))
-      ]);
-    }).then(result => {
-      result.should.eql(['e', 'f', 'h', 'i']);
-    }).then(() => Promise.all([
-      fs.rmdir(src),
-      fs.rmdir(dest)
-    ]));
+      ]))
+      .should.become(['e', 'f', 'h', 'i'])
+      .then(() => Promise.all([fs.rmdir(src), fs.rmdir(dest)]));
   });
 
   it('copyDir() - callback', callback => {
@@ -299,33 +283,30 @@ describe('fs', () => {
 
     return createDummyFolder(src)
       .then(() => fs.copyDir(src, dest, {ignoreHidden: false}))
-      .then(files => {
-        files.should.have.members([
-          pathFn.join('.hidden', 'a.txt'),
-          pathFn.join('.hidden', 'b.js'),
-          pathFn.join('.hidden', 'c', 'd'),
-          'e.txt',
-          'f.js',
-          '.g',
-          pathFn.join('folder', 'h.txt'),
-          pathFn.join('folder', 'i.js'),
-          pathFn.join('folder', '.j')
-        ]);
-
-        return Promise.all([
-          fs.readFile(pathFn.join(dest, '.hidden', 'a.txt')),
-          fs.readFile(pathFn.join(dest, '.hidden', 'b.js')),
-          fs.readFile(pathFn.join(dest, '.hidden', 'c', 'd')),
-          fs.readFile(pathFn.join(dest, 'e.txt')),
-          fs.readFile(pathFn.join(dest, 'f.js')),
-          fs.readFile(pathFn.join(dest, '.g')),
-          fs.readFile(pathFn.join(dest, 'folder', 'h.txt')),
-          fs.readFile(pathFn.join(dest, 'folder', 'i.js')),
-          fs.readFile(pathFn.join(dest, 'folder', '.j'))
-        ]);
-      }).then(result => {
-        result.should.eql(['a', 'b', 'd', 'e', 'f', 'g', 'h', 'i', 'j']);
-      }).then(() => Promise.all([fs.rmdir(src), fs.rmdir(dest)]));
+      .should.eventually.have.members([
+        pathFn.join('.hidden', 'a.txt'),
+        pathFn.join('.hidden', 'b.js'),
+        pathFn.join('.hidden', 'c', 'd'),
+        'e.txt',
+        'f.js',
+        '.g',
+        pathFn.join('folder', 'h.txt'),
+        pathFn.join('folder', 'i.js'),
+        pathFn.join('folder', '.j')
+      ])
+      .then(() => Promise.all([
+        fs.readFile(pathFn.join(dest, '.hidden', 'a.txt')),
+        fs.readFile(pathFn.join(dest, '.hidden', 'b.js')),
+        fs.readFile(pathFn.join(dest, '.hidden', 'c', 'd')),
+        fs.readFile(pathFn.join(dest, 'e.txt')),
+        fs.readFile(pathFn.join(dest, 'f.js')),
+        fs.readFile(pathFn.join(dest, '.g')),
+        fs.readFile(pathFn.join(dest, 'folder', 'h.txt')),
+        fs.readFile(pathFn.join(dest, 'folder', 'i.js')),
+        fs.readFile(pathFn.join(dest, 'folder', '.j'))
+      ]))
+      .should.become(['a', 'b', 'd', 'e', 'f', 'g', 'h', 'i', 'j'])
+      .then(() => Promise.all([fs.rmdir(src), fs.rmdir(dest)]));
   });
 
   it('copyDir() - ignorePattern', () => {
@@ -334,16 +315,13 @@ describe('fs', () => {
 
     return createDummyFolder(src)
       .then(() => fs.copyDir(src, dest, {ignorePattern: /\.js/}))
-      .then(files => {
-        files.should.have.members(['e.txt', pathFn.join('folder', 'h.txt')]);
-
-        return Promise.all([
-          fs.readFile(pathFn.join(dest, 'e.txt')),
-          fs.readFile(pathFn.join(dest, 'folder', 'h.txt'))
-        ]);
-      }).then(result => {
-        result.should.eql(['e', 'h']);
-      }).then(() => Promise.all([fs.rmdir(src), fs.rmdir(dest)]));
+      .should.eventually.have.members(['e.txt', pathFn.join('folder', 'h.txt')])
+      .then(() => Promise.all([
+        fs.readFile(pathFn.join(dest, 'e.txt')),
+        fs.readFile(pathFn.join(dest, 'folder', 'h.txt'))
+      ]))
+      .should.become(['e', 'h'])
+      .then(() => Promise.all([fs.rmdir(src), fs.rmdir(dest)]));
   });
 
   it('listDir()', () => {
@@ -351,16 +329,13 @@ describe('fs', () => {
 
     return createDummyFolder(target)
       .then(() => fs.listDir(target))
-      .then(files => {
-        files.should.have.members([
-          'e.txt',
-          'f.js',
-          pathFn.join('folder', 'h.txt'),
-          pathFn.join('folder', 'i.js')
-        ]);
-
-        return fs.rmdir(target);
-      });
+      .should.eventually.have.members([
+        'e.txt',
+        'f.js',
+        pathFn.join('folder', 'h.txt'),
+        pathFn.join('folder', 'i.js')
+      ])
+      .then(() => fs.rmdir(target));
   });
 
   it('listDir() - callback', callback => {
@@ -389,21 +364,18 @@ describe('fs', () => {
 
     return createDummyFolder(target)
       .then(() => fs.listDir(target, {ignoreHidden: false}))
-      .then(files => {
-        files.should.have.members([
-          pathFn.join('.hidden', 'a.txt'),
-          pathFn.join('.hidden', 'b.js'),
-          pathFn.join('.hidden', 'c', 'd'),
-          'e.txt',
-          'f.js',
-          '.g',
-          pathFn.join('folder', 'h.txt'),
-          pathFn.join('folder', 'i.js'),
-          pathFn.join('folder', '.j')
-        ]);
-
-        return fs.rmdir(target);
-      });
+      .should.eventually.have.members([
+        pathFn.join('.hidden', 'a.txt'),
+        pathFn.join('.hidden', 'b.js'),
+        pathFn.join('.hidden', 'c', 'd'),
+        'e.txt',
+        'f.js',
+        '.g',
+        pathFn.join('folder', 'h.txt'),
+        pathFn.join('folder', 'i.js'),
+        pathFn.join('folder', '.j')
+      ])
+      .then(() => fs.rmdir(target));
   });
 
   it('listDir() - ignorePattern', () => {
@@ -411,10 +383,8 @@ describe('fs', () => {
 
     return createDummyFolder(target)
       .then(() => fs.listDir(target, {ignorePattern: /\.js/}))
-      .then(files => {
-        files.should.have.members(['e.txt', pathFn.join('folder', 'h.txt')]);
-        return fs.rmdir(target);
-      });
+      .should.eventually.have.members(['e.txt', pathFn.join('folder', 'h.txt')])
+      .then(() => fs.rmdir(target));
   });
 
   it('listDirSync()', () => {
@@ -474,10 +444,8 @@ describe('fs', () => {
 
     return fs.writeFile(target, body)
       .then(() => fs.readFile(target))
-      .then(content => {
-        content.should.eql(body);
-        return fs.unlink(target);
-      });
+      .should.become(body)
+      .then(() => fs.unlink(target));
   });
 
   it('readFile() - callback', callback => {
@@ -502,10 +470,8 @@ describe('fs', () => {
 
     return fs.writeFile(target, body)
       .then(() => fs.readFile(target))
-      .then(content => {
-        content.should.eql('foo');
-        return fs.unlink(target);
-      });
+      .should.become('foo')
+      .then(() => fs.unlink(target));
   });
 
   it('readFile() - escape Windows line ending', () => {
@@ -514,10 +480,8 @@ describe('fs', () => {
 
     return fs.writeFile(target, body)
       .then(() => fs.readFile(target))
-      .then(content => {
-        content.should.eql('foo\nbar');
-        return fs.unlink(target);
-      });
+      .should.become('foo\nbar')
+      .then(() => fs.unlink(target));
   });
 
   it('readFileSync()', () => {
@@ -594,7 +558,7 @@ describe('fs', () => {
           [pathFn.join(target, 'folder', '.j'), true]
         ];
       })
-      .map(data => fs.exists(data[0]).then(exist => { exist.should.eql(data[1]); }))
+      .map(data => fs.exists(data[0]).should.become(data[1]))
       .then(() => fs.rmdir(target));
   });
 
@@ -621,9 +585,7 @@ describe('fs', () => {
           [pathFn.join(target, 'folder', 'i.js'), false],
           [pathFn.join(target, 'folder', '.j'), true]
         ], data => {
-          return fs.exists(data[0]).then(exist => {
-            exist.should.eql(data[1]);
-          });
+          return fs.exists(data[0]).should.become(data[1]);
         }).asCallback(tiferr(callback, () => {
           fs.rmdir(target, callback);
         }));
@@ -654,18 +616,18 @@ describe('fs', () => {
         ]);
 
         return [
-          [pathFn.join(target, '.hidden', 'a.txt'), false],
-          [pathFn.join(target, '.hidden', 'b.js'), false],
-          [pathFn.join(target, '.hidden', 'c', 'd'), false],
-          [pathFn.join(target, 'e.txt'), false],
-          [pathFn.join(target, 'f.js'), false],
-          [pathFn.join(target, '.g'), false],
-          [pathFn.join(target, 'folder', 'h.txt'), false],
-          [pathFn.join(target, 'folder', 'i.js'), false],
-          [pathFn.join(target, 'folder', '.j'), false]
+          pathFn.join(target, '.hidden', 'a.txt'),
+          pathFn.join(target, '.hidden', 'b.js'),
+          pathFn.join(target, '.hidden', 'c', 'd'),
+          pathFn.join(target, 'e.txt'),
+          pathFn.join(target, 'f.js'),
+          pathFn.join(target, '.g'),
+          pathFn.join(target, 'folder', 'h.txt'),
+          pathFn.join(target, 'folder', 'i.js'),
+          pathFn.join(target, 'folder', '.j')
         ];
       })
-      .map(data => fs.exists(data[0]).then(exist => { exist.should.eql(data[1]); }))
+      .map(data => fs.exists(data).should.become(false))
       .then(() => fs.rmdir(target));
   });
 
@@ -674,21 +636,18 @@ describe('fs', () => {
 
     return createDummyFolder(target)
       .then(() => fs.emptyDir(target, {ignorePattern: /\.js/}))
-      .then(files => {
-        files.should.have.members(['e.txt', pathFn.join('folder', 'h.txt')]);
-
-        return [
-          [pathFn.join(target, '.hidden', 'a.txt'), true],
-          [pathFn.join(target, '.hidden', 'b.js'), true],
-          [pathFn.join(target, '.hidden', 'c', 'd'), true],
-          [pathFn.join(target, 'e.txt'), false],
-          [pathFn.join(target, 'f.js'), true],
-          [pathFn.join(target, '.g'), true],
-          [pathFn.join(target, 'folder', 'h.txt'), false],
-          [pathFn.join(target, 'folder', 'i.js'), true],
-          [pathFn.join(target, 'folder', '.j'), true]
-        ];
-      })
+      .should.eventually.have.members(['e.txt', pathFn.join('folder', 'h.txt')])
+      .then(() => [
+        [pathFn.join(target, '.hidden', 'a.txt'), true],
+        [pathFn.join(target, '.hidden', 'b.js'), true],
+        [pathFn.join(target, '.hidden', 'c', 'd'), true],
+        [pathFn.join(target, 'e.txt'), false],
+        [pathFn.join(target, 'f.js'), true],
+        [pathFn.join(target, '.g'), true],
+        [pathFn.join(target, 'folder', 'h.txt'), false],
+        [pathFn.join(target, 'folder', 'i.js'), true],
+        [pathFn.join(target, 'folder', '.j'), true]
+      ])
       .map(data => fs.exists(data[0]).then(exist => { exist.should.eql(data[1]); }))
       .then(() => fs.rmdir(target));
   });
@@ -698,21 +657,19 @@ describe('fs', () => {
 
     return createDummyFolder(target)
       .then(() => fs.emptyDir(target, {exclude: ['e.txt', pathFn.join('folder', 'i.js')]}))
-      .then(files => {
-        files.should.have.members(['f.js', pathFn.join('folder', 'h.txt')]);
-
-        return [
-          [pathFn.join(target, '.hidden', 'a.txt'), true],
-          [pathFn.join(target, '.hidden', 'b.js'), true],
-          [pathFn.join(target, '.hidden', 'c', 'd'), true],
-          [pathFn.join(target, 'e.txt'), true],
-          [pathFn.join(target, 'f.js'), false],
-          [pathFn.join(target, '.g'), true],
-          [pathFn.join(target, 'folder', 'h.txt'), false],
-          [pathFn.join(target, 'folder', 'i.js'), true],
-          [pathFn.join(target, 'folder', '.j'), true]
-        ];
-      }).map(data => fs.exists(data[0]).then(exist => { exist.should.eql(data[1]); }))
+      .should.eventually.have.members(['f.js', pathFn.join('folder', 'h.txt')])
+      .then(() => [
+        [pathFn.join(target, '.hidden', 'a.txt'), true],
+        [pathFn.join(target, '.hidden', 'b.js'), true],
+        [pathFn.join(target, '.hidden', 'c', 'd'), true],
+        [pathFn.join(target, 'e.txt'), true],
+        [pathFn.join(target, 'f.js'), false],
+        [pathFn.join(target, '.g'), true],
+        [pathFn.join(target, 'folder', 'h.txt'), false],
+        [pathFn.join(target, 'folder', 'i.js'), true],
+        [pathFn.join(target, 'folder', '.j'), true]
+      ])
+      .map(data => fs.exists(data[0]).then(exist => { exist.should.eql(data[1]); }))
       .then(() => fs.rmdir(target));
   });
 
@@ -768,18 +725,18 @@ describe('fs', () => {
         ]);
 
         return [
-          [pathFn.join(target, '.hidden', 'a.txt'), false],
-          [pathFn.join(target, '.hidden', 'b.js'), false],
-          [pathFn.join(target, '.hidden', 'c', 'd'), false],
-          [pathFn.join(target, 'e.txt'), false],
-          [pathFn.join(target, 'f.js'), false],
-          [pathFn.join(target, '.g'), false],
-          [pathFn.join(target, 'folder', 'h.txt'), false],
-          [pathFn.join(target, 'folder', 'i.js'), false],
-          [pathFn.join(target, 'folder', '.j'), false]
+          pathFn.join(target, '.hidden', 'a.txt'),
+          pathFn.join(target, '.hidden', 'b.js'),
+          pathFn.join(target, '.hidden', 'c', 'd'),
+          pathFn.join(target, 'e.txt'),
+          pathFn.join(target, 'f.js'),
+          pathFn.join(target, '.g'),
+          pathFn.join(target, 'folder', 'h.txt'),
+          pathFn.join(target, 'folder', 'i.js'),
+          pathFn.join(target, 'folder', '.j')
         ];
       })
-      .map(data => fs.exists(data[0]).then(exist => { exist.should.eql(data[1]); }))
+      .map(data => fs.exists(data).should.become(false))
       .then(() => fs.rmdir(target));
   });
 
@@ -803,7 +760,7 @@ describe('fs', () => {
           [pathFn.join(target, 'folder', '.j'), true]
         ];
       })
-      .map(data => fs.exists(data[0]).then(exist => { exist.should.eql(data[1]); }))
+      .map(data => fs.exists(data[0]).should.become(data[1]))
       .then(() => fs.rmdir(target));
   });
 
@@ -827,7 +784,7 @@ describe('fs', () => {
           [pathFn.join(target, 'folder', '.j'), true]
         ];
       })
-      .map(data => fs.exists(data[0]).then(exist => { exist.should.eql(data[1]); }))
+      .map(data => fs.exists(data[0]).should.become(data[1]))
       .then(() => fs.rmdir(target));
   });
 
@@ -837,9 +794,7 @@ describe('fs', () => {
     return createDummyFolder(target)
       .then(() => fs.rmdir(target))
       .then(() => fs.exists(target))
-      .then(exist => {
-        exist.should.be.false;
-      });
+      .should.become(false);
   });
 
   it('rmdir() - callback', callback => {
@@ -870,9 +825,7 @@ describe('fs', () => {
     return createDummyFolder(target).then(() => {
       fs.rmdirSync(target);
       return fs.exists(target);
-    }).then(exist => {
-      exist.should.be.false;
-    });
+    }).should.become(false);
   });
 
   it('rmdirSync() - path is required', () => {
@@ -891,9 +844,7 @@ describe('fs', () => {
       watcher = watcher_;
 
       return Promise.all([
-        testerWrap(watcher).then(path_ => {
-          path_.should.eql(target);
-        }),
+        testerWrap(watcher).should.become(target),
         fs.writeFile(target, 'test')
       ]);
     }).finally(() => {
@@ -916,18 +867,14 @@ describe('fs', () => {
       fs.writeFile(pathFn.join(target, 'foo-1.txt')),
       fs.writeFile(pathFn.join(target, 'foo-2.md')),
       fs.writeFile(pathFn.join(target, 'bar.txt'))
-    ]).then(() => fs.ensurePath(pathFn.join(target, 'foo.txt'))).then(path => {
-      path.should.eql(pathFn.join(target, 'foo-2.txt'));
-      return fs.rmdir(target);
-    });
+    ]).then(() => fs.ensurePath(pathFn.join(target, 'foo.txt')))
+      .should.become(pathFn.join(target, 'foo-2.txt'))
+      .then(() => fs.rmdir(target));
   });
 
   it('ensurePath() - file not exist', () => {
     const target = pathFn.join(tmpDir, 'foo.txt');
-
-    return fs.ensurePath(target).then(path => {
-      path.should.eql(target);
-    });
+    return fs.ensurePath(target).should.become(target);
   });
 
   it('ensurePath() - callback', callback => {
