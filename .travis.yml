@@ -14,7 +14,8 @@ cache:
 node_js:
   - "8"
   - "10"
-  - "node"
+  - "12"
+  - "13"
 
 script:
   - if [[ $TRAVIS_OS_NAME == "linux" ]]; then
