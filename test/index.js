@@ -1052,24 +1052,27 @@ describe('fs', () => {
     }
   });
 
-  it('ensureWriteStream()', () => {
-    const target = join(tmpDir, 'foo', 'bar.txt');
+  it('ensureWriteStream()', async () => {
+    const target = join(tmpDir, 'foo', 'bara.txt');
 
-    return fs.ensureWriteStream(target).then(stream => {
-      stream.path.should.eql(target);
+    const stream = await fs.ensureWriteStream(target);
+    stream.path.should.eql(target);
 
-      const streamPromise = new Promise((resolve, reject) => {
-        stream.on('error', reject);
-        stream.on('close', resolve);
-      });
+    const streamPromise = new Promise((resolve, reject) => {
+      stream.on('error', reject);
+      stream.on('close', resolve('success'));
+    });
 
-      stream.end();
-      return streamPromise;
-    }).then(() => fs.unlink(target));
+    stream.end();
+    const result = await streamPromise;
+    result.should.eql('success');
+
+    const exist = await fs.exists(target);
+    if (exist) await fs.unlink(target);
   });
 
   it('ensureWriteStream() - callback', callback => {
-    const target = join(tmpDir, 'foo', 'bar.txt');
+    const target = join(tmpDir, 'foo', 'bara.txt');
 
     fs.ensureWriteStream(target, tiferr(callback, stream => {
       stream.path.should.eql(target);
