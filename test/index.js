@@ -994,9 +994,6 @@ describe('fs', () => {
     const result = await fs.ensurePath(join(target, 'foo.txt'));
     result.should.eql(join(target, 'foo-2.txt'));
 
-    // const exist = await fs.exists(join(target, 'bar.txt'));
-    // if (exist) await fs.unlink(join(target, 'bar.txt'));
-
     fs.rmdir(target);
   });
 
@@ -1008,7 +1005,7 @@ describe('fs', () => {
 
   it('ensurePath() - callback', callback => {
     const target = join(tmpDir, 'test');
-    const filenames = ['foo.txt', 'foo-1.txt', 'foo-2.md', 'bar.txt'];
+    const filenames = ['foo.txt', 'foo-1.txt', 'foo-2.md'];
 
     Promise.map(filenames, path => fs.writeFile(join(target, path))).asCallback(tiferr(callback, () => {
       fs.ensurePath(join(target, 'foo.txt'), tiferr(callback, path => {
