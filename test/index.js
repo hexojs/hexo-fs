@@ -1093,7 +1093,9 @@ describe('fs', () => {
 
     stream.on('error', callback);
     stream.on('close', () => {
-      fs.unlink(target, callback);
+      fs.exists(target, exist => {
+        if (exist) fs.unlink(target, callback);
+      });
     });
 
     stream.end();
