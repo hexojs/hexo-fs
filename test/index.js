@@ -1060,12 +1060,12 @@ describe('fs', () => {
       stream.on('close', resolve('success'));
     });
 
-    stream.end();
     const result = await streamPromise;
     result.should.eql('success');
 
     const exist = await fs.exists(target);
     if (exist) await fs.unlink(target);
+    stream.end();
   });
 
   it('ensureWriteStream() - callback', callback => {
