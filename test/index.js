@@ -960,7 +960,7 @@ describe('fs', () => {
 
   it('watch()', () => {
     let watcher;
-    const target = join(tmpDir, 'test.txt');
+    const target = join(tmpDir, 'testa.txt');
 
     const testerWrap = _watcher => new Promise((resolve, reject) => {
       _watcher.on('add', resolve).on('error', reject);
