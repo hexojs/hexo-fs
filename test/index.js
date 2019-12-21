@@ -994,10 +994,10 @@ describe('fs', () => {
     const result = await fs.ensurePath(join(target, 'foo.txt'));
     result.should.eql(join(target, 'foo-2.txt'));
 
-    const exist = await fs.exists(join(target, 'bar.txt'));
-    if (exist) await fs.unlink(join(target, 'bar.txt'));
+    // const exist = await fs.exists(join(target, 'bar.txt'));
+    // if (exist) await fs.unlink(join(target, 'bar.txt'));
 
-    await fs.rmdir(target);
+    fs.rmdir(target);
   });
 
   it('ensurePath() - file not exist', async () => {
