@@ -33,10 +33,7 @@ describe('fs', () => {
 
   before(() => fs.mkdirs(tmpDir));
 
-  after(async () => {
-    const exist = await fs.exists(tmpDir);
-    if (exist) fs.rmdir(tmpDir);
-  });
+  after(() => fs.rmdir(tmpDir));
 
   it('exists()', async () => {
     const exist = await fs.exists(tmpDir);
@@ -1096,7 +1093,7 @@ describe('fs', () => {
 
     stream.on('error', callback);
     stream.on('close', () => {
-      fs.rmdir(dirname(target), callback);
+      fs.unlink(target, callback);
     });
 
     stream.end();
