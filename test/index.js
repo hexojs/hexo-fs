@@ -958,24 +958,27 @@ describe('fs', () => {
     }
   });
 
-  it('watch()', async () => {
+  it('watch()', () => {
+    let watcher;
     const target = join(tmpDir, 'test.txt');
 
     const testerWrap = _watcher => new Promise((resolve, reject) => {
       _watcher.on('add', resolve).on('error', reject);
     });
 
-    const watcher = await fs.watch(tmpDir);
-    const result = await Promise.all([
-      testerWrap(watcher),
-      fs.writeFile(target, 'test')
-    ]);
-    result[0].should.eql(target);
+    return fs.watch(tmpDir).then(watcher_ => {
+      watcher = watcher_;
 
-    if (watcher) {
-      watcher.close();
-    }
-    await fs.unlink(target);
+      return Promise.all([
+        testerWrap(watcher).should.become(target),
+        fs.writeFile(target, 'test')
+      ]);
+    }).finally(() => {
+      if (watcher) {
+        watcher.close();
+      }
+      return fs.unlink(target);
+    });
   });
 
   it('watch() - path is required', async () => {
