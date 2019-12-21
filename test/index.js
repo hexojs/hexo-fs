@@ -2,7 +2,7 @@
 
 require('chai').use(require('chai-as-promised')).should();
 
-const { join, dirname } = require('path');
+const { join } = require('path');
 const Promise = require('bluebird');
 const fs = require('../lib/fs');
 const { tiferr } = require('iferr');
