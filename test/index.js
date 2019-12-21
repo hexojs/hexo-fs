@@ -33,7 +33,7 @@ describe('fs', () => {
 
   before(() => fs.mkdirs(tmpDir));
 
-  after(async () => await fs.rmdir(tmpDir));
+  after(() => fs.rmdir(tmpDir));
 
   it('exists()', async () => {
     const exist = await fs.exists(tmpDir);
@@ -993,6 +993,9 @@ describe('fs', () => {
     await Promise.map(filenames, path => fs.writeFile(join(target, path)));
     const result = await fs.ensurePath(join(target, 'foo.txt'));
     result.should.eql(join(target, 'foo-2.txt'));
+
+    const exist = await fs.exists(join(target, 'bar.txt'));
+    if (exist) await fs.unlink(join(target, 'bar.txt'));
 
     await fs.rmdir(target);
   });
