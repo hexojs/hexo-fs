@@ -33,7 +33,7 @@ describe('fs', () => {
 
   before(() => fs.mkdirs(tmpDir));
 
-  after(() => fs.rmdir(tmpDir));
+  after(async () => await fs.rmdir(tmpDir));
 
   it('exists()', async () => {
     const exist = await fs.exists(tmpDir);
