@@ -1,6 +1,7 @@
 'use strict';
 
 require('chai').use(require('chai-as-promised')).should();
+const { should } = require('chai');
 
 const { join, dirname } = require('path');
 const Promise = require('bluebird');
@@ -35,7 +36,10 @@ describe('fs', () => {
 
   after(() => fs.rmdir(tmpDir));
 
-  it('exists()', () => fs.exists(tmpDir).should.become(true));
+  it('exists()', async () => {
+    const exist = await fs.exists(tmpDir);
+    exist.should.eql(true);
+  });
 
   it('exists() - callback', callback => {
     fs.exists(tmpDir, exist => {
@@ -49,17 +53,23 @@ describe('fs', () => {
     });
   });
 
-  it('exists() - path is required', () => {
-    fs.exists.should.to.throw('path is required!');
+  it('exists() - path is required', async () => {
+    try {
+      await fs.exists();
+      should.fail();
+    } catch (err) {
+      err.message.should.eql('path is required!');
+    }
   });
 
-  it('mkdirs()', () => {
+  it('mkdirs()', async () => {
     const target = join(tmpDir, 'a', 'b', 'c');
 
-    return fs.mkdirs(target)
-      .then(() => fs.exists(target))
-      .should.become(true)
-      .then(() => fs.rmdir(join(tmpDir, 'a')));
+    await fs.mkdirs(target);
+    const exist = await fs.exists(target);
+    exist.should.eql(true);
+
+    await fs.rmdir(join(tmpDir, 'a'));
   });
 
   it('mkdirs() - callback', callback => {
@@ -73,32 +83,45 @@ describe('fs', () => {
     }));
   });
 
-  it('mkdirs() - path is required', () => {
-    fs.mkdirs.should.to.throw('path is required!');
+  it('mkdirs() - path is required', async () => {
+    try {
+      await fs.mkdirs();
+      should.fail();
+    } catch (err) {
+      err.message.should.eql('path is required!');
+    }
   });
 
-  it('mkdirsSync()', () => {
+  it('mkdirsSync()', async () => {
     const target = join(tmpDir, 'a', 'b', 'c');
 
     fs.mkdirsSync(target);
 
-    return fs.exists(target)
-      .should.become(true)
-      .then(() => fs.rmdir(join(tmpDir, 'a')));
+    const exist = await fs.exists(target);
+    exist.should.eql(true);
+
+    await fs.rmdir(join(tmpDir, 'a'));
   });
 
   it('mkdirsSync() - path is required', () => {
-    fs.mkdirsSync.should.to.throw('path is required!');
+    try {
+      fs.mkdirsSync();
+      should.fail();
+    } catch (err) {
+      err.message.should.eql('path is required!');
+    }
   });
 
-  it('writeFile()', () => {
+  it('writeFile()', async () => {
     const target = join(tmpDir, 'a', 'b', 'test.txt');
     const body = 'foo';
 
-    return fs.writeFile(target, body)
-      .then(() => fs.readFile(target))
-      .should.become(body)
-      .then(() => fs.rmdir(join(tmpDir, 'a')));
+    await fs.writeFile(target, body);
+    const result = await fs.readFile(target);
+
+    result.should.eql(body);
+
+    await fs.rmdir(join(tmpDir, 'a'));
   });
 
   it('writeFile() - callback', callback => {
@@ -113,35 +136,49 @@ describe('fs', () => {
     }));
   });
 
-  it('writeFile() - path is required', () => {
-    fs.writeFile.should.to.throw('path is required!');
+  it('writeFile() - path is required', async () => {
+    try {
+      await fs.writeFile();
+      should.fail();
+    } catch (err) {
+      err.message.should.eql('path is required!');
+    }
   });
 
-  it('writeFileSync()', () => {
+  it('writeFileSync()', async () => {
     const target = join(tmpDir, 'a', 'b', 'test.txt');
     const body = 'foo';
 
     fs.writeFileSync(target, body);
 
-    return fs.readFile(target)
-      .should.become(body)
-      .then(() => fs.rmdir(join(tmpDir, 'a')));
+    const result = await fs.readFile(target);
+    result.should.eql(body);
+
+    await fs.rmdir(join(tmpDir, 'a'));
   });
 
   it('writeFileSync() - path is required', () => {
-    fs.writeFileSync.should.to.throw('path is required!');
+    try {
+      fs.writeFileSync();
+      should.fail();
+    } catch (err) {
+      err.message.should.eql('path is required!');
+    }
   });
 
-  it('appendFile()', () => {
+  it('appendFile()', async () => {
     const target = join(tmpDir, 'a', 'b', 'test.txt');
     const body = 'foo';
     const body2 = 'bar';
 
-    return fs.writeFile(target, body)
-      .then(() => fs.appendFile(target, body2))
-      .then(() => fs.readFile(target))
-      .should.become(body + body2)
-      .then(() => fs.rmdir(join(tmpDir, 'a')));
+    await fs.writeFile(target, body);
+    await fs.appendFile(target, body2);
+
+    const result = await fs.readFile(target);
+
+    result.should.eql(body + body2);
+
+    await fs.rmdir(join(tmpDir, 'a'));
   });
 
   it('appendFile() - callback', callback => {
@@ -159,40 +196,53 @@ describe('fs', () => {
     }));
   });
 
-  it('appendFile() - path is required', () => {
-    fs.appendFile.should.to.throw('path is required!');
+  it('appendFile() - path is required', async () => {
+    try {
+      await fs.appendFile();
+      should.fail();
+    } catch (err) {
+      err.message.should.eql('path is required!');
+    }
   });
 
-  it('appendFileSync()', () => {
+  it('appendFileSync()', async () => {
     const target = join(tmpDir, 'a', 'b', 'test.txt');
     const body = 'foo';
     const body2 = 'bar';
 
-    return fs.writeFile(target, body).then(() => {
-      fs.appendFileSync(target, body2);
-      return fs.readFile(target);
-    }).should.become(body + body2).then(() => {
-      return fs.rmdir(join(tmpDir, 'a'));
-    });
+    await fs.writeFile(target, body);
+    fs.appendFileSync(target, body2);
+
+    const result = await fs.readFile(target);
+    result.should.eql(body + body2);
+
+    await fs.rmdir(join(tmpDir, 'a'));
   });
 
   it('appendFileSync() - path is required', () => {
-    fs.appendFileSync.should.to.throw('path is required!');
+    try {
+      fs.appendFileSync();
+      should.fail();
+    } catch (err) {
+      err.message.should.eql('path is required!');
+    }
   });
 
-  it('copyFile()', () => {
+  it('copyFile()', async () => {
     const src = join(tmpDir, 'test.txt');
     const dest = join(tmpDir, 'a', 'b', 'test.txt');
     const body = 'foo';
 
-    return fs.writeFile(src, body)
-      .then(() => fs.copyFile(src, dest))
-      .then(() => fs.readFile(dest))
-      .should.become(body)
-      .then(() => Promise.all([
-        fs.unlink(src),
-        fs.rmdir(join(tmpDir, 'a'))
-      ]));
+    await fs.writeFile(src, body);
+    await fs.copyFile(src, dest);
+
+    const result = await fs.readFile(dest);
+    result.should.eql(body);
+
+    await Promise.all([
+      fs.unlink(src),
+      fs.rmdir(join(tmpDir, 'a'))
+    ]);
   });
 
   it('copyFile() - callback', callback => {
@@ -214,15 +264,25 @@ describe('fs', () => {
     }));
   });
 
-  it('copyFile() - src is required', () => {
-    fs.copyFile.should.to.throw('src is required!');
+  it('copyFile() - src is required', async () => {
+    try {
+      await fs.copyFile();
+      should.fail();
+    } catch (err) {
+      err.message.should.eql('src is required!');
+    }
   });
 
-  it('copyFile() - dest is required', () => {
-    (() => fs.copyFile('123')).should.to.throw('dest is required!');
+  it('copyFile() - dest is required', async () => {
+    try {
+      await fs.copyFile('123');
+      should.fail();
+    } catch (err) {
+      err.message.should.eql('dest is required!');
+    }
   });
 
-  it('copyDir()', () => {
+  it('copyDir()', async () => {
     const src = join(tmpDir, 'a');
     const dest = join(tmpDir, 'b');
 
@@ -233,15 +293,18 @@ describe('fs', () => {
       join('folder', 'i.js')
     ];
 
-    return createDummyFolder(src)
-      .then(() => fs.copyDir(src, dest))
-      .then(files => files.should.have.members(filenames))
-      .thenReturn(filenames)
-      .map(path => fs.readFile(join(dest, path)))
-      .then(result => {
-        result.should.eql(['e', 'f', 'h', 'i']);
-        return Promise.all([fs.rmdir(src), fs.rmdir(dest)]);
-      });
+    await createDummyFolder(src);
+    const files = await fs.copyDir(src, dest);
+    files.should.eql(filenames);
+
+    const result = [];
+    for (const file of files) {
+      const output = await fs.readFile(join(dest, file));
+      result.push(output);
+    }
+    result.should.eql(['e', 'f', 'h', 'i']);
+
+    await Promise.all([fs.rmdir(src), fs.rmdir(dest)]);
   });
 
   it('copyDir() - callback', callback => {
@@ -268,15 +331,25 @@ describe('fs', () => {
     }));
   });
 
-  it('copyDir() - src is required', () => {
-    fs.copyDir.should.to.throw('src is required!');
+  it('copyDir() - src is required', async () => {
+    try {
+      await fs.copyDir();
+      should.fail();
+    } catch (err) {
+      err.message.should.eql('src is required!');
+    }
   });
 
-  it('copyDir() - dest is required', () => {
-    (() => fs.copyDir('123')).should.to.throw('dest is required!');
+  it('copyDir() - dest is required', async () => {
+    try {
+      await fs.copyDir('123');
+      should.fail();
+    } catch (err) {
+      err.message.should.eql('dest is required!');
+    }
   });
 
-  it('copyDir() - ignoreHidden off', () => {
+  it('copyDir() - ignoreHidden off', async () => {
     const src = join(tmpDir, 'a');
     const dest = join(tmpDir, 'b');
 
@@ -292,42 +365,54 @@ describe('fs', () => {
       join('folder', '.j')
     ];
 
-    return createDummyFolder(src)
-      .then(() => fs.copyDir(src, dest, {ignoreHidden: false}))
-      .then(files => files.should.have.members(filenames))
-      .return(filenames)
-      .map(path => fs.readFile(join(dest, path)))
-      .should.become(['a', 'b', 'd', 'e', 'f', 'g', 'h', 'i', 'j'])
-      .then(() => Promise.all([fs.rmdir(src), fs.rmdir(dest)]));
+    await createDummyFolder(src);
+    const files = await fs.copyDir(src, dest, { ignoreHidden: false });
+    files.should.have.members(filenames);
+
+    const result = [];
+    for (const file of files) {
+      const output = await fs.readFile(join(dest, file));
+      result.push(output);
+    }
+    result.should.have.members(['a', 'b', 'd', 'e', 'f', 'g', 'h', 'i', 'j']);
+
+    await Promise.all([fs.rmdir(src), fs.rmdir(dest)]);
   });
 
-  it('copyDir() - ignorePattern', () => {
+  it('copyDir() - ignorePattern', async () => {
     const src = join(tmpDir, 'a');
     const dest = join(tmpDir, 'b');
 
     const filenames = ['e.txt', join('folder', 'h.txt')];
 
-    return createDummyFolder(src)
-      .then(() => fs.copyDir(src, dest, {ignorePattern: /\.js/}))
-      .then(files => files.should.have.members(filenames))
-      .return(filenames)
-      .map(path => fs.readFile(join(dest, path)))
-      .should.become(['e', 'h'])
-      .then(() => Promise.all([fs.rmdir(src), fs.rmdir(dest)]));
+    await createDummyFolder(src);
+    const files = await fs.copyDir(src, dest, { ignorePattern: /\.js/ });
+    files.should.eql(filenames);
+
+    const result = [];
+    for (const file of files) {
+      const output = await fs.readFile(join(dest, file));
+      result.push(output);
+    }
+    result.should.eql(['e', 'h']);
+
+    await Promise.all([fs.rmdir(src), fs.rmdir(dest)]);
   });
 
-  it('listDir()', () => {
+  it('listDir()', async () => {
+    const expected = [
+      'e.txt',
+      'f.js',
+      join('folder', 'h.txt'),
+      join('folder', 'i.js')
+    ];
     const target = join(tmpDir, 'test');
 
-    return createDummyFolder(target)
-      .then(() => fs.listDir(target))
-      .should.eventually.have.members([
-        'e.txt',
-        'f.js',
-        join('folder', 'h.txt'),
-        join('folder', 'i.js')
-      ])
-      .then(() => fs.rmdir(target));
+    await createDummyFolder(target);
+    const dir = await fs.listDir(target);
+    dir.should.eql(expected);
+
+    await fs.rmdir(target);
   });
 
   it('listDir() - callback', callback => {
@@ -348,11 +433,16 @@ describe('fs', () => {
     }));
   });
 
-  it('listDir() - path is required', () => {
-    fs.listDir.should.to.throw('path is required!');
+  it('listDir() - path is required', async () => {
+    try {
+      await fs.listDir();
+      should.fail();
+    } catch (err) {
+      err.message.should.eql('path is required!');
+    }
   });
 
-  it('listDir() - ignoreHidden off', () => {
+  it('listDir() - ignoreHidden off', async () => {
     const target = join(tmpDir, 'test');
 
     const filenames = [
@@ -367,22 +457,24 @@ describe('fs', () => {
       join('folder', '.j')
     ];
 
-    return createDummyFolder(target)
-      .then(() => fs.listDir(target, {ignoreHidden: false}))
-      .should.eventually.have.members(filenames)
-      .then(() => fs.rmdir(target));
+    await createDummyFolder(target);
+    const dir = await fs.listDir(target, { ignoreHidden: false });
+    dir.should.have.members(filenames);
+
+    await fs.rmdir(target);
   });
 
-  it('listDir() - ignorePattern', () => {
+  it('listDir() - ignorePattern', async () => {
     const target = join(tmpDir, 'test');
 
-    return createDummyFolder(target)
-      .then(() => fs.listDir(target, {ignorePattern: /\.js/}))
-      .should.eventually.have.members(['e.txt', join('folder', 'h.txt')])
-      .then(() => fs.rmdir(target));
+    await createDummyFolder(target);
+    const dir = await fs.listDir(target, { ignorePattern: /\.js/ });
+    dir.should.eql(['e.txt', join('folder', 'h.txt')]);
+
+    await fs.rmdir(target);
   });
 
-  it('listDirSync()', () => {
+  it('listDirSync()', async () => {
     const target = join(tmpDir, 'test');
 
     const filenames = [
@@ -392,18 +484,23 @@ describe('fs', () => {
       join('folder', 'i.js')
     ];
 
-    return createDummyFolder(target).then(() => {
-      const files = fs.listDirSync(target);
-      files.should.have.members(filenames);
-      return fs.rmdir(target);
-    });
+    await createDummyFolder(target);
+    const files = fs.listDirSync(target);
+    files.should.eql(filenames);
+
+    await fs.rmdir(target);
   });
 
   it('listDirSync() - path is required', () => {
-    fs.listDirSync.should.to.throw('path is required!');
+    try {
+      fs.listDirSync();
+      should.fail();
+    } catch (err) {
+      err.message.should.eql('path is required!');
+    }
   });
 
-  it('listDirSync() - ignoreHidden off', () => {
+  it('listDirSync() - ignoreHidden off', async () => {
     const target = join(tmpDir, 'test');
 
     const filenames = [
@@ -418,31 +515,32 @@ describe('fs', () => {
       join('folder', '.j')
     ];
 
-    return createDummyFolder(target).then(() => {
-      const files = fs.listDirSync(target, {ignoreHidden: false});
-      files.should.have.members(filenames);
-      return fs.rmdir(target);
-    });
+    await createDummyFolder(target);
+    const files = fs.listDirSync(target, { ignoreHidden: false });
+    files.should.have.members(filenames);
+
+    await fs.rmdir(target);
   });
 
-  it('listDirSync() - ignorePattern', () => {
+  it('listDirSync() - ignorePattern', async () => {
     const target = join(tmpDir, 'test');
 
-    return createDummyFolder(target).then(() => {
-      const files = fs.listDirSync(target, {ignorePattern: /\.js/});
-      files.should.have.members(['e.txt', join('folder', 'h.txt')]);
-      return fs.rmdir(target);
-    });
+    await createDummyFolder(target);
+    const files = fs.listDirSync(target, {ignorePattern: /\.js/});
+    files.should.eql(['e.txt', join('folder', 'h.txt')]);
+
+    await fs.rmdir(target);
   });
 
-  it('readFile()', () => {
+  it('readFile()', async () => {
     const target = join(tmpDir, 'test.txt');
     const body = 'test';
 
-    return fs.writeFile(target, body)
-      .then(() => fs.readFile(target))
-      .should.become(body)
-      .then(() => fs.unlink(target));
+    await fs.writeFile(target, body);
+    const result = await fs.readFile(target);
+    result.should.eql(body);
+
+    await fs.unlink(target);
   });
 
   it('readFile() - callback', callback => {
@@ -457,76 +555,93 @@ describe('fs', () => {
     }));
   });
 
-  it('readFile() - path is required', () => {
-    fs.readFile.should.to.throw('path is required!');
+  it('readFile() - path is required', async () => {
+    try {
+      await fs.readFile();
+      should.fail();
+    } catch (err) {
+      err.message.should.eql('path is required!');
+    }
   });
 
-  it('readFile() - escape BOM', () => {
+  it('readFile() - escape BOM', async () => {
     const target = join(tmpDir, 'test.txt');
     const body = '\ufefffoo';
 
-    return fs.writeFile(target, body)
-      .then(() => fs.readFile(target))
-      .should.become('foo')
-      .then(() => fs.unlink(target));
+    await fs.writeFile(target, body);
+    const result = await fs.readFile(target);
+
+    result.should.eql('foo');
+
+    await fs.unlink(target);
   });
 
-  it('readFile() - escape Windows line ending', () => {
+  it('readFile() - escape Windows line ending', async () => {
     const target = join(tmpDir, 'test.txt');
     const body = 'foo\r\nbar';
 
-    return fs.writeFile(target, body)
-      .then(() => fs.readFile(target))
-      .should.become('foo\nbar')
-      .then(() => fs.unlink(target));
+    await fs.writeFile(target, body);
+    const result = await fs.readFile(target);
+    result.should.eql('foo\nbar');
+
+    await fs.unlink(target);
   });
 
-  it('readFileSync()', () => {
+  it('readFileSync()', async () => {
     const target = join(tmpDir, 'test.txt');
     const body = 'test';
 
-    return fs.writeFile(target, body).then(() => {
-      fs.readFileSync(target).should.eql(body);
-      return fs.unlink(target);
-    });
+    await fs.writeFile(target, body);
+    const result = fs.readFileSync(target);
+    result.should.eql(body);
+
+    await fs.unlink(target);
   });
 
   it('readFileSync() - path is required', () => {
-    fs.readFileSync.should.to.throw('path is required!');
+    try {
+      fs.readFileSync();
+      should.fail();
+    } catch (err) {
+      err.message.should.eql('path is required!');
+    }
   });
 
-  it('readFileSync() - escape BOM', () => {
+  it('readFileSync() - escape BOM', async () => {
     const target = join(tmpDir, 'test.txt');
     const body = '\ufefffoo';
 
-    return fs.writeFile(target, body).then(() => {
-      fs.readFileSync(target).should.eql('foo');
-      return fs.unlink(target);
-    });
+    await fs.writeFile(target, body);
+    const result = fs.readFileSync(target);
+    result.should.eql('foo');
+
+    await fs.unlink(target);
   });
 
-  it('readFileSync() - escape Windows line ending', () => {
+  it('readFileSync() - escape Windows line ending', async () => {
     const target = join(tmpDir, 'test.txt');
     const body = 'foo\r\nbar';
 
-    return fs.writeFile(target, body).then(() => {
-      fs.readFileSync(target).should.eql('foo\nbar');
-      return fs.unlink(target);
-    });
+    await fs.writeFile(target, body);
+    const result = fs.readFileSync(target);
+    result.should.eql('foo\nbar');
+
+    await fs.unlink(target);
   });
 
-  it('unlink()', () => {
+  it('unlink()', async () => {
     const target = join(tmpDir, 'test-unlink');
 
-    return fs.writeFile(target, '')
-      .then(() => fs.exists(target))
-      .should.become(true)
-      .then(() => fs.unlink(target))
-      .then(() => fs.exists(target))
-      .should.become(false);
+    await fs.writeFile(target, '');
+    let exist = await fs.exists(target);
+    exist.should.eql(true);
+
+    await fs.unlink(target);
+    exist = await fs.exists(target);
+    exist.should.eql(false);
   });
 
-  it('emptyDir()', () => {
+  it('emptyDir()', async () => {
     const target = join(tmpDir, 'test');
 
     const checkExistsMap = {
@@ -541,20 +656,22 @@ describe('fs', () => {
       [join('folder', '.j')]: true
     };
 
-    return createDummyFolder(target)
-      .then(() => fs.emptyDir(target))
-      .then(files => {
-        files.should.have.members([
-          'e.txt',
-          'f.js',
-          join('folder', 'h.txt'),
-          join('folder', 'i.js')
-        ]);
+    await createDummyFolder(target);
+    const files = await fs.emptyDir(target);
+    files.should.eql([
+      'e.txt',
+      'f.js',
+      join('folder', 'h.txt'),
+      join('folder', 'i.js')
+    ]);
 
-        return Object.keys(checkExistsMap);
-      })
-      .map(path => fs.exists(join(target, path)).should.become(checkExistsMap[path]))
-      .then(() => fs.rmdir(target));
+    const paths = Object.keys(checkExistsMap);
+    for (const path of paths) {
+      const exist = await fs.exists(join(target, path));
+      exist.should.eql(checkExistsMap[path]);
+    }
+
+    await fs.rmdir(target);
   });
 
   it('emptyDir() - callback', callback => {
@@ -590,11 +707,16 @@ describe('fs', () => {
     }));
   });
 
-  it('emptyDir() - path is required', () => {
-    fs.emptyDir.should.to.throw('path is required!');
+  it('emptyDir() - path is required', async () => {
+    try {
+      await fs.emptyDir();
+      should.fail();
+    } catch (err) {
+      err.message.should.eql('path is required!');
+    }
   });
 
-  it('emptyDir() - ignoreHidden off', () => {
+  it('emptyDir() - ignoreHidden off', async () => {
     const target = join(tmpDir, 'test');
 
     const filenames = [
@@ -609,15 +731,19 @@ describe('fs', () => {
       join('folder', '.j')
     ];
 
-    return createDummyFolder(target)
-      .then(() => fs.emptyDir(target, {ignoreHidden: false}))
-      .then(files => files.should.have.members(filenames))
-      .return(filenames)
-      .map(path => fs.exists(join(target, path)).should.become(false))
-      .then(() => fs.rmdir(target));
+    await createDummyFolder(target);
+    const files = await fs.emptyDir(target, { ignoreHidden: false });
+    files.should.have.members(filenames);
+
+    for (const file of files) {
+      const exist = await fs.exists(join(target, file));
+      exist.should.eql(false);
+    }
+
+    await fs.rmdir(target);
   });
 
-  it('emptyDir() - ignorePattern', () => {
+  it('emptyDir() - ignorePattern', async () => {
     const target = join(tmpDir, 'test');
 
     const checkExistsMap = {
@@ -632,15 +758,20 @@ describe('fs', () => {
       [join('folder', '.j')]: true
     };
 
-    return createDummyFolder(target)
-      .then(() => fs.emptyDir(target, {ignorePattern: /\.js/}))
-      .then(files => files.should.have.members(['e.txt', join('folder', 'h.txt')]))
-      .return(Object.keys(checkExistsMap))
-      .map(path => fs.exists(join(target, path)).should.become(checkExistsMap[path]))
-      .then(() => fs.rmdir(target));
+    await createDummyFolder(target);
+    const files = await fs.emptyDir(target, { ignorePattern: /\.js/ });
+    files.should.eql(['e.txt', join('folder', 'h.txt')]);
+
+    const paths = Object.keys(checkExistsMap);
+    for (const path of paths) {
+      const exist = await fs.exists(join(target, path));
+      exist.should.eql(checkExistsMap[path]);
+    }
+
+    await fs.rmdir(target);
   });
 
-  it('emptyDir() - exclude', () => {
+  it('emptyDir() - exclude', async () => {
     const target = join(tmpDir, 'test');
 
     const checkExistsMap = {
@@ -655,15 +786,20 @@ describe('fs', () => {
       [join('folder', '.j')]: true
     };
 
-    return createDummyFolder(target)
-      .then(() => fs.emptyDir(target, {exclude: ['e.txt', join('folder', 'i.js')]}))
-      .then(files => files.should.have.members(['f.js', join('folder', 'h.txt')]))
-      .return(Object.keys(checkExistsMap))
-      .map(path => fs.exists(join(target, path)).should.become(checkExistsMap[path]))
-      .then(() => fs.rmdir(target));
+    await createDummyFolder(target);
+    const files = await fs.emptyDir(target, { exclude: ['e.txt', join('folder', 'i.js')] });
+    files.should.eql(['f.js', join('folder', 'h.txt')]);
+
+    const paths = Object.keys(checkExistsMap);
+    for (const path of paths) {
+      const exist = await fs.exists(join(target, path));
+      exist.should.eql(checkExistsMap[path]);
+    }
+
+    await fs.rmdir(target);
   });
 
-  it('emptyDirSync()', () => {
+  it('emptyDirSync()', async () => {
     const target = join(tmpDir, 'test');
 
     const checkExistsMap = {
@@ -678,27 +814,34 @@ describe('fs', () => {
       [join('folder', '.j')]: true
     };
 
-    return createDummyFolder(target)
-      .then(() => {
-        const files = fs.emptyDirSync(target);
-        files.should.have.members([
-          'e.txt',
-          'f.js',
-          join('folder', 'h.txt'),
-          join('folder', 'i.js')
-        ]);
+    await createDummyFolder(target);
+    const files = fs.emptyDirSync(target);
+    files.should.eql([
+      'e.txt',
+      'f.js',
+      join('folder', 'h.txt'),
+      join('folder', 'i.js')
+    ]);
 
-        return Object.keys(checkExistsMap);
-      })
-      .map(path => fs.exists(join(target, path)).should.become(checkExistsMap[path]))
-      .then(() => fs.rmdir(target));
+    const paths = Object.keys(checkExistsMap);
+    for (const path of paths) {
+      const exist = await fs.exists(join(target, path));
+      exist.should.eql(checkExistsMap[path]);
+    }
+
+    await fs.rmdir(target);
   });
 
   it('emptyDirSync() - path is required', () => {
-    fs.emptyDirSync.should.to.throw('path is required!');
+    try {
+      fs.emptyDirSync();
+      should.fail();
+    } catch (err) {
+      err.message.should.eql('path is required!');
+    }
   });
 
-  it('emptyDirSync() - ignoreHidden off', () => {
+  it('emptyDirSync() - ignoreHidden off', async () => {
     const target = join(tmpDir, 'test');
 
     const filenames = [
@@ -713,17 +856,19 @@ describe('fs', () => {
       join('folder', '.j')
     ];
 
-    return createDummyFolder(target)
-      .then(() => {
-        const files = fs.emptyDirSync(target, {ignoreHidden: false});
-        files.should.have.members(filenames);
-        return filenames;
-      })
-      .map(path => fs.exists(join(target, path)).should.become(false))
-      .then(() => fs.rmdir(target));
+    await createDummyFolder(target);
+    const files = fs.emptyDirSync(target, { ignoreHidden: false });
+    files.should.have.members(filenames);
+
+    for (const file of files) {
+      const exist = await fs.exists(join(target, file));
+      exist.should.eql(false);
+    }
+
+    await fs.rmdir(target);
   });
 
-  it('emptyDirSync() - ignorePattern', () => {
+  it('emptyDirSync() - ignorePattern', async () => {
     const target = join(tmpDir, 'test');
 
     const checkExistsMap = {
@@ -738,18 +883,20 @@ describe('fs', () => {
       [join('folder', '.j')]: true
     };
 
-    return createDummyFolder(target)
-      .then(() => {
-        const files = fs.emptyDirSync(target, {ignorePattern: /\.js/});
-        files.should.have.members(['e.txt', join('folder', 'h.txt')]);
+    await createDummyFolder(target);
+    const files = fs.emptyDirSync(target, { ignorePattern: /\.js/ });
+    files.should.eql(['e.txt', join('folder', 'h.txt')]);
 
-        return Object.keys(checkExistsMap);
-      })
-      .map(path => fs.exists(join(target, path)).should.become(checkExistsMap[path]))
-      .then(() => fs.rmdir(target));
+    const paths = Object.keys(checkExistsMap);
+    for (const path of paths) {
+      const exist = await fs.exists(join(target, path));
+      exist.should.eql(checkExistsMap[path]);
+    }
+
+    await fs.rmdir(target);
   });
 
-  it('emptyDirSync() - exclude', () => {
+  it('emptyDirSync() - exclude', async () => {
     const target = join(tmpDir, 'test');
 
     const checkExistsMap = {
@@ -764,24 +911,26 @@ describe('fs', () => {
       [join('folder', '.j')]: true
     };
 
-    return createDummyFolder(target)
-      .then(() => {
-        const files = fs.emptyDirSync(target, {exclude: ['e.txt', join('folder', 'i.js')]});
-        files.should.have.members(['f.js', join('folder', 'h.txt')]);
+    await createDummyFolder(target);
+    const files = fs.emptyDirSync(target, { exclude: ['e.txt', join('folder', 'i.js')] });
+    files.should.eql(['f.js', join('folder', 'h.txt')]);
 
-        return Object.keys(checkExistsMap);
-      })
-      .map(path => fs.exists(join(target, path)).should.become(checkExistsMap[path]))
-      .then(() => fs.rmdir(target));
+    const paths = Object.keys(checkExistsMap);
+    for (const path of paths) {
+      const exist = await fs.exists(join(target, path));
+      exist.should.eql(checkExistsMap[path]);
+    }
+
+    await fs.rmdir(target);
   });
 
-  it('rmdir()', () => {
+  it('rmdir()', async () => {
     const target = join(tmpDir, 'test');
 
-    return createDummyFolder(target)
-      .then(() => fs.rmdir(target))
-      .then(() => fs.exists(target))
-      .should.become(false);
+    await createDummyFolder(target);
+    await fs.rmdir(target);
+    const exist = await fs.exists(target);
+    exist.should.eql(false);
   });
 
   it('rmdir() - callback', callback => {
@@ -802,63 +951,77 @@ describe('fs', () => {
     }));
   });
 
-  it('rmdir() - path is required', () => {
-    fs.rmdir.should.to.throw('path is required!');
+  it('rmdir() - path is required', async () => {
+    try {
+      await fs.rmdir();
+      should.fail();
+    } catch (err) {
+      err.message.should.eql('path is required!');
+    }
   });
 
-  it('rmdirSync()', () => {
+  it('rmdirSync()', async () => {
     const target = join(tmpDir, 'test');
 
-    return createDummyFolder(target).then(() => {
-      fs.rmdirSync(target);
-      return fs.exists(target);
-    }).should.become(false);
+    await createDummyFolder(target);
+    fs.rmdirSync(target);
+    const exist = await fs.exists(target);
+    exist.should.eql(false);
   });
 
   it('rmdirSync() - path is required', () => {
-    fs.rmdirSync.should.to.throw('path is required!');
+    try {
+      fs.rmdirSync();
+      should.fail();
+    } catch (err) {
+      err.message.should.eql('path is required!');
+    }
   });
 
-  it('watch()', () => {
-    let watcher;
+  it('watch()', async () => {
     const target = join(tmpDir, 'test.txt');
 
     const testerWrap = _watcher => new Promise((resolve, reject) => {
       _watcher.on('add', resolve).on('error', reject);
     });
 
-    return fs.watch(tmpDir).then(watcher_ => {
-      watcher = watcher_;
+    const watcher = await fs.watch(tmpDir);
+    const result = await Promise.all([
+      testerWrap(watcher),
+      fs.writeFile(target, 'test')
+    ]);
+    result[0].should.eql(target);
 
-      return Promise.all([
-        testerWrap(watcher).should.become(target),
-        fs.writeFile(target, 'test')
-      ]);
-    }).finally(() => {
-      if (watcher) {
-        watcher.close();
-      }
-      return fs.unlink(target);
-    });
+    if (watcher) {
+      watcher.close();
+    }
+    await fs.unlink(target);
   });
 
-  it('watch() - path is required', () => {
-    fs.watch.should.to.throw('path is required!');
+  it('watch() - path is required', async () => {
+    try {
+      await fs.watch();
+      should.fail();
+    } catch (err) {
+      err.message.should.eql('path is required!');
+    }
   });
 
-  it('ensurePath() - file exists', () => {
+  it('ensurePath() - file exists', async () => {
     const target = join(tmpDir, 'test');
     const filenames = ['foo.txt', 'foo-1.txt', 'foo-2.md', 'bar.txt'];
 
-    return Promise.map(filenames, path => fs.writeFile(join(target, path)))
-      .then(() => fs.ensurePath(join(target, 'foo.txt')))
-      .should.become(join(target, 'foo-2.txt'))
-      .then(() => fs.rmdir(target));
+    await Promise.map(filenames, path => fs.writeFile(join(target, path)));
+    const result = await fs.ensurePath(join(target, 'foo.txt'));
+    result.should.eql(join(target, 'foo-2.txt'));
+
+    await fs.rmdir(target);
   });
 
-  it('ensurePath() - file not exist', () => {
+  it('ensurePath() - file not exist', async () => {
     const target = join(tmpDir, 'foo.txt');
-    return fs.ensurePath(target).should.become(target);
+    const result = await fs.ensurePath(target);
+    result.should.eql(target);
   });
 
   it('ensurePath() - callback', callback => {
@@ -873,20 +1036,24 @@ describe('fs', () => {
     }));
   });
 
-  it('ensurePath() - path is required', () => {
-    fs.ensurePath.should.to.throw('path is required!');
+  it('ensurePath() - path is required', async () => {
+    try {
+      await fs.ensurePath();
+      should.fail();
+    } catch (err) {
+      err.message.should.eql('path is required!');
+    }
   });
 
-  it('ensurePathSync() - file exists', () => {
+  it('ensurePathSync() - file exists', async () => {
     const target = join(tmpDir, 'test');
     const filenames = ['foo.txt', 'foo-1.txt', 'foo-2.md', 'bar.txt'];
 
-    return Promise.map(filenames, path => fs.writeFile(join(target, path))).then(() => {
-      const path = fs.ensurePathSync(join(target, 'foo.txt'));
-      path.should.eql(join(target, 'foo-2.txt'));
+    await Promise.map(filenames, path => fs.writeFile(join(target, path)));
+    const path = fs.ensurePathSync(join(target, 'foo.txt'));
+    path.should.eql(join(target, 'foo-2.txt'));
 
-      return fs.rmdir(target);
-    });
+    await fs.rmdir(target);
   });
 
   it('ensurePathSync() - file not exist', () => {
@@ -897,23 +1064,28 @@ describe('fs', () => {
   });
 
   it('ensurePathSync() - path is required', () => {
-    fs.ensurePathSync.should.to.throw('path is required!');
+    try {
+      fs.ensurePathSync();
+      should.fail();
+    } catch (err) {
+      err.message.should.eql('path is required!');
+    }
   });
 
-  it('ensureWriteStream()', () => {
+  it('ensureWriteStream()', async () => {
+    const { promisify } = require('util');
+    const streamFn = require('stream');
+    const finished = promisify(streamFn.finished);
+
     const target = join(tmpDir, 'foo', 'bar.txt');
 
-    return fs.ensureWriteStream(target).then(stream => {
-      stream.path.should.eql(target);
+    const stream = await fs.ensureWriteStream(target);
+    stream.path.should.eql(target);
 
-      const streamPromise = new Promise((resolve, reject) => {
-        stream.on('error', reject);
-        stream.on('close', resolve);
-      });
+    stream.end();
+    await finished(stream);
 
-      stream.end();
-      return streamPromise;
-    }).then(() => fs.unlink(target));
+    await fs.unlink(target);
   });
 
   it('ensureWriteStream() - callback', callback => {
