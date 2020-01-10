@@ -39,7 +39,7 @@
     "eslint": "^6.0.1",
     "eslint-config-hexo": "^4.1.0",
     "iferr": "^1.0.2",
-    "mocha": "^6.0.2",
+    "mocha": "^7.0.0",
     "nyc": "^14.1.1"
   },
   "engines": {
