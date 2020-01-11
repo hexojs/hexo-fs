@@ -40,7 +40,7 @@
     "eslint-config-hexo": "^4.1.0",
     "iferr": "^1.0.2",
     "mocha": "^7.0.0",
-    "nyc": "^14.1.1"
+    "nyc": "^15.0.0"
   },
   "engines": {
     "node": ">=10"
