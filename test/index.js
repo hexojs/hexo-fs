@@ -1,14 +1,13 @@
 'use strict';
 
-require('chai').use(require('chai-as-promised')).should();
 const { should } = require('chai');
+should();
 
 const { join, dirname } = require('path');
 const Promise = require('bluebird');
 const fs = require('../lib/fs');
-const { tiferr } = require('iferr');
 
-function createDummyFolder(path, callback) {
+function createDummyFolder(path) {
   const filesMap = {
     // Normal files in a hidden folder
     [join('.hidden', 'a.txt')]: 'a',
@@ -26,7 +25,7 @@ function createDummyFolder(path, callback) {
     // A hidden files in a normal folder
     [join('folder', '.j')]: 'j'
   };
-  return Promise.map(Object.keys(filesMap), key => fs.writeFile(join(path, key), filesMap[key])).asCallback(callback);
+  return Promise.map(Object.keys(filesMap), key => fs.writeFile(join(path, key), filesMap[key]));
 }
 
 describe('fs', () => {
@@ -39,18 +38,6 @@ describe('fs', () => {
   it('exists()', async () => {
     const exist = await fs.exists(tmpDir);
     exist.should.eql(true);
-  });
-
-  it('exists() - callback', callback => {
-    fs.exists(tmpDir, exist => {
-      try {
-        exist.should.be.true;
-      } catch (e) {
-        callback(e);
-        return;
-      }
-      callback();
-    });
   });
 
   it('exists() - path is required', async () => {
@@ -70,17 +57,6 @@ describe('fs', () => {
     exist.should.eql(true);
 
     await fs.rmdir(join(tmpDir, 'a'));
-  });
-
-  it('mkdirs() - callback', callback => {
-    const target = join(tmpDir, 'a', 'b', 'c');
-
-    fs.mkdirs(target, tiferr(callback, () => {
-      fs.exists(target, exist => {
-        exist.should.be.true;
-        fs.rmdir(join(tmpDir, 'a'), callback);
-      });
-    }));
   });
 
   it('mkdirs() - path is required', async () => {
@@ -122,18 +98,6 @@ describe('fs', () => {
     result.should.eql(body);
 
     await fs.rmdir(join(tmpDir, 'a'));
-  });
-
-  it('writeFile() - callback', callback => {
-    const target = join(tmpDir, 'a', 'b', 'test.txt');
-    const body = 'foo';
-
-    fs.writeFile(target, body, tiferr(callback, () => {
-      fs.readFile(target, tiferr(callback, content => {
-        content.should.eql(body);
-        fs.rmdir(join(tmpDir, 'a'), callback);
-      }));
-    }));
   });
 
   it('writeFile() - path is required', async () => {
@@ -179,21 +143,6 @@ describe('fs', () => {
     result.should.eql(body + body2);
 
     await fs.rmdir(join(tmpDir, 'a'));
-  });
-
-  it('appendFile() - callback', callback => {
-    const target = join(tmpDir, 'a', 'b', 'test.txt');
-    const body = 'foo';
-    const body2 = 'bar';
-
-    fs.writeFile(target, body, tiferr(callback, () => {
-      fs.appendFile(target, body2, tiferr(callback, () => {
-        fs.readFile(target, tiferr(callback, content => {
-          content.should.eql(body + body2);
-          fs.rmdir(join(tmpDir, 'a'), callback);
-        }));
-      }));
-    }));
   });
 
   it('appendFile() - path is required', async () => {
@@ -245,25 +194,6 @@ describe('fs', () => {
     ]);
   });
 
-  it('copyFile() - callback', callback => {
-    const src = join(tmpDir, 'test.txt');
-    const dest = join(tmpDir, 'a', 'b', 'test.txt');
-    const body = 'foo';
-
-    fs.writeFile(src, body, tiferr(callback, () => {
-      fs.copyFile(src, dest, tiferr(callback, () => {
-        fs.readFile(dest, tiferr(callback, content => {
-          content.should.eql(body);
-
-          Promise.all([
-            fs.unlink(src),
-            fs.rmdir(join(tmpDir, 'a'))
-          ]).asCallback(callback);
-        }));
-      }));
-    }));
-  });
-
   it('copyFile() - src is required', async () => {
     try {
       await fs.copyFile();
@@ -305,30 +235,6 @@ describe('fs', () => {
     result.should.eql(['e', 'f', 'h', 'i']);
 
     await Promise.all([fs.rmdir(src), fs.rmdir(dest)]);
-  });
-
-  it('copyDir() - callback', callback => {
-    const src = join(tmpDir, 'a');
-    const dest = join(tmpDir, 'b');
-
-    const finenames = [
-      'e.txt',
-      'f.js',
-      join('folder', 'h.txt'),
-      join('folder', 'i.js')
-    ];
-
-    createDummyFolder(src, tiferr(callback, () => {
-      fs.copyDir(src, dest, tiferr(callback, files => {
-        files.should.have.members(finenames);
-        fs.rmdir(src, tiferr(callback, () => {
-          Promise.map(finenames, path => fs.readFile(join(dest, path))).asCallback(tiferr(callback, result => {
-            result.should.eql(['e', 'f', 'h', 'i']);
-            fs.rmdir(dest, callback);
-          }));
-        }));
-      }));
-    }));
   });
 
   it('copyDir() - src is required', async () => {
@@ -413,24 +319,6 @@ describe('fs', () => {
     dir.should.eql(expected);
 
     await fs.rmdir(target);
-  });
-
-  it('listDir() - callback', callback => {
-    const target = join(tmpDir, 'test');
-
-    const filenames = [
-      'e.txt',
-      'f.js',
-      join('folder', 'h.txt'),
-      join('folder', 'i.js')
-    ];
-
-    createDummyFolder(target, tiferr(callback, () => {
-      fs.listDir(target, tiferr(callback, paths => {
-        paths.should.have.members(filenames);
-        fs.rmdir(target, callback);
-      }));
-    }));
   });
 
   it('listDir() - path is required', async () => {
@@ -541,18 +429,6 @@ describe('fs', () => {
     result.should.eql(body);
 
     await fs.unlink(target);
-  });
-
-  it('readFile() - callback', callback => {
-    const target = join(tmpDir, 'test.txt');
-    const body = 'test';
-
-    fs.writeFile(target, body, tiferr(callback, () => {
-      fs.readFile(target, tiferr(callback, content => {
-        content.should.eql(body);
-        fs.unlink(target, callback);
-      }));
-    }));
   });
 
   it('readFile() - path is required', async () => {
@@ -672,39 +548,6 @@ describe('fs', () => {
     }
 
     await fs.rmdir(target);
-  });
-
-  it('emptyDir() - callback', callback => {
-    const target = join(tmpDir, 'test');
-
-    const checkExistsMap = {
-      [join('.hidden', 'a.txt')]: true,
-      [join('.hidden', 'b.js')]: true,
-      [join('.hidden', 'c', 'd')]: true,
-      'e.txt': false,
-      'f.js': false,
-      '.g': true,
-      [join('folder', 'h.txt')]: false,
-      [join('folder', 'i.js')]: false,
-      [join('folder', '.j')]: true
-    };
-
-    createDummyFolder(target, tiferr(callback, () => {
-      fs.emptyDir(target, tiferr(callback, files => {
-        files.should.have.members([
-          'e.txt',
-          'f.js',
-          join('folder', 'h.txt'),
-          join('folder', 'i.js')
-        ]);
-
-        return Promise.map(Object.keys(checkExistsMap), path => {
-          return fs.exists(join(target, path)).should.become(checkExistsMap[path]);
-        }).asCallback(tiferr(callback, () => {
-          fs.rmdir(target, callback);
-        }));
-      }));
-    }));
   });
 
   it('emptyDir() - path is required', async () => {
@@ -933,24 +776,6 @@ describe('fs', () => {
     exist.should.eql(false);
   });
 
-  it('rmdir() - callback', callback => {
-    const target = join(tmpDir, 'test');
-
-    createDummyFolder(target, tiferr(callback, () => {
-      fs.rmdir(target, tiferr(callback, () => {
-        fs.exists(target, exist => {
-          try {
-            exist.should.be.false;
-          } catch (e) {
-            callback(e);
-            return;
-          }
-          callback();
-        });
-      }));
-    }));
-  });
-
   it('rmdir() - path is required', async () => {
     try {
       await fs.rmdir();
@@ -1024,18 +849,6 @@ describe('fs', () => {
     result.should.eql(target);
   });
 
-  it('ensurePath() - callback', callback => {
-    const target = join(tmpDir, 'test');
-    const filenames = ['foo.txt', 'foo-1.txt', 'foo-2.md', 'bar.txt'];
-
-    Promise.map(filenames, path => fs.writeFile(join(target, path))).asCallback(tiferr(callback, () => {
-      fs.ensurePath(join(target, 'foo.txt'), tiferr(callback, path => {
-        path.should.eql(join(target, 'foo-2.txt'));
-        fs.rmdir(target, callback);
-      }));
-    }));
-  });
-
   it('ensurePath() - path is required', async () => {
     try {
       await fs.ensurePath();
@@ -1088,21 +901,6 @@ describe('fs', () => {
     await fs.unlink(target);
   });
 
-  it('ensureWriteStream() - callback', callback => {
-    const target = join(tmpDir, 'foo', 'bar.txt');
-
-    fs.ensureWriteStream(target, tiferr(callback, stream => {
-      stream.path.should.eql(target);
-
-      stream.on('error', callback);
-      stream.on('close', () => {
-        fs.unlink(target, callback);
-      });
-
-      stream.end();
-    }));
-  });
-
   it('ensureWriteStreamSync()', callback => {
     const target = join(tmpDir, 'foo', 'bar.txt');
     const stream = fs.ensureWriteStreamSync(target);
@@ -1111,7 +909,7 @@ describe('fs', () => {
 
     stream.on('error', callback);
     stream.on('close', () => {
-      fs.rmdir(dirname(target), callback);
+      fs.rmdir(dirname(target)).asCallback(callback);
     });
 
     stream.end();
