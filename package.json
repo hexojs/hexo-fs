@@ -5,7 +5,7 @@
   "main": "lib/fs.js",
   "scripts": {
     "eslint": "eslint .",
-    "test": "mocha test/index.js",
+    "test": "mocha test/index.js --require ts-node/register",
     "test-cov": "nyc --reporter=lcovonly npm run test"
   },
   "directories": {
@@ -31,7 +31,8 @@
     "bluebird": "^3.7.2",
     "chokidar": "^3.5.2",
     "graceful-fs": "^4.2.9",
-    "hexo-util": "^2.5.0"
+    "hexo-util": "^2.5.0",
+    "ts-node": "^10.5.0"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.36",
