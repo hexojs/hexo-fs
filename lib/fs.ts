@@ -10,17 +10,14 @@ const fsPromises = fs.promises;
 
 const rEOL = /\r\n/g;
 
-function exists(path: string, callback?: (exist: boolean) => any) {
+function exists(path: string) {
   if (!path) throw new TypeError('path is required!');
   const promise = fsPromises.access(path).then(() => true, error => {
     if (error.code !== 'ENOENT') throw error;
     return false;
-  }).then(exist => {
-    if (typeof callback === 'function') callback(exist);
-    return exist;
   });
 
-  return Promise.resolve(promise);
+  return BlueBirdPromise.resolve(promise);
 }
 
 function existsSync(path: string) {
