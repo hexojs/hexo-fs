@@ -1,4 +1,20 @@
 {
+  "root": true,
   "extends": "hexo",
-  "root": true
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": 2020
+  },
+  "env": {
+    "es6": true,
+    "node": true,
+    "commonjs": true
+  },
+  "parser": "@typescript-eslint/parser",
+  "plugins": [
+    "@typescript-eslint"
+  ],
+  "rules": {
+    "node/no-unsupported-features/es-syntax": "off"
+  }
 }
