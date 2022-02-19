@@ -5,3 +5,4 @@ tmp/
 .idea/
 .nyc_output/
 package-lock.json
+dist

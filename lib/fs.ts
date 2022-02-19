@@ -119,7 +119,6 @@ function ignoreExcludeFiles(arr: any[], parent: string) {
 }
 
 export type ReadDirOptions = {
-  // eslint-disable-next-line no-undef
   encoding?: BufferEncoding | null
   withFileTypes?: false
   ignoreHidden?: boolean
