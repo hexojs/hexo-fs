@@ -14,6 +14,7 @@
   "files": [
     "dist/**"
   ],
+  "types": "./dist/fs.d.ts",
   "repository": "hexojs/hexo-fs",
   "homepage": "https://hexo.io/",
   "keywords": [
