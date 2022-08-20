@@ -152,7 +152,7 @@ async function _copyDirWalker(
       return _copyDirWalker(childSrc, childDest, results, currentPath, options);
     }
     results.push(currentPath);
-    return copyFile(childSrc, childDest);
+    return copyFile(childSrc, childDest, 0);
   });
 }
 
