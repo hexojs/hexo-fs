@@ -10,7 +10,7 @@ const fsPromises = fs.promises;
 
 const rEOL = /\r\n/g;
 
-function exists(path: string) {
+export function exists(path: string) {
   if (!path) throw new TypeError('path is required!');
   const promise = fsPromises.access(path).then(() => true, error => {
     if (error.code !== 'ENOENT') throw error;
@@ -20,7 +20,7 @@ function exists(path: string) {
   return BlueBirdPromise.resolve(promise);
 }
 
-function existsSync(path: string) {
+export function existsSync(path: string) {
   if (!path) throw new TypeError('path is required!');
 
   try {
@@ -33,13 +33,13 @@ function existsSync(path: string) {
   return true;
 }
 
-function mkdirs(path: string) {
+export function mkdirs(path: string) {
   if (!path) throw new TypeError('path is required!');
 
   return BlueBirdPromise.resolve(fsPromises.mkdir(path, { recursive: true }));
 }
 
-function mkdirsSync(path: string) {
+export function mkdirsSync(path: string) {
   if (!path) throw new TypeError('path is required!');
 
   fs.mkdirSync(path, { recursive: true });
@@ -49,7 +49,7 @@ function checkParent(path: string) {
   return BlueBirdPromise.resolve(fsPromises.mkdir(dirname(path), { recursive: true }));
 }
 
-function writeFile(
+export function writeFile(
   path: string,
   data: any,
   options?: WriteFileOptions
@@ -63,14 +63,14 @@ function writeFile(
 }
 
 
-function writeFileSync(path: string, data: any, options?: WriteFileOptions) {
+export function writeFileSync(path: string, data: any, options?: WriteFileOptions) {
   if (!path) throw new TypeError('path is required!');
 
   fs.mkdirSync(dirname(path), { recursive: true });
   fs.writeFileSync(path, data, options);
 }
 
-function appendFile(
+export function appendFile(
   path: string,
   data: any,
   options?: WriteFileOptions) {
@@ -80,14 +80,14 @@ function appendFile(
     .then(() => fsPromises.appendFile(path, data, options));
 }
 
-function appendFileSync(path: string, data: any, options?: WriteFileOptions) {
+export function appendFileSync(path: string, data: any, options?: WriteFileOptions) {
   if (!path) throw new TypeError('path is required!');
 
   fs.mkdirSync(dirname(path), { recursive: true });
   fs.appendFileSync(path, data, options);
 }
 
-function copyFile(
+export function copyFile(
   src: string, dest: string, flags?: number) {
   if (!src) throw new TypeError('src is required!');
   if (!dest) throw new TypeError('dest is required!');
@@ -156,7 +156,7 @@ async function _copyDirWalker(
   });
 }
 
-function copyDir(
+export function copyDir(
   src: string, dest: string, options: ReadDirOptions = {}) {
   if (!src) throw new TypeError('src is required!');
   if (!dest) throw new TypeError('dest is required!');
@@ -186,7 +186,7 @@ async function _listDirWalker(
   await BlueBirdPromise.all(promises);
 }
 
-function listDir(
+export function listDir(
   path: string, options: ReadDirOptions = {}) {
   if (!path) throw new TypeError('path is required!');
 
@@ -209,7 +209,7 @@ function _listDirSyncWalker(
   }
 }
 
-function listDirSync(path: string, options: ReadDirOptions = {}) {
+export function listDirSync(path: string, options: ReadDirOptions = {}) {
   if (!path) throw new TypeError('path is required!');
   const results = [];
 
@@ -218,15 +218,15 @@ function listDirSync(path: string, options: ReadDirOptions = {}) {
   return results;
 }
 
-function escapeEOL(str: string) {
+export function escapeEOL(str: string) {
   return str.replace(rEOL, '\n');
 }
 
-function escapeBOM(str: string) {
+export function escapeBOM(str: string) {
   return str.charCodeAt(0) === 0xFEFF ? str.substring(1) : str;
 }
 
-function escapeFileContent(content) {
+export function escapeFileContent(content) {
   return escapeBOM(escapeEOL(content));
 }
 
@@ -245,14 +245,14 @@ async function _readFile(path: string, options: ReadFileOptions | null = {}) {
   return content;
 }
 
-function readFile(
+export function readFile(
   path: string, options?: ReadFileOptions | null) {
   if (!path) throw new TypeError('path is required!');
 
   return BlueBirdPromise.resolve(_readFile(path, options));
 }
 
-function readFileSync(path: string, options: ReadFileOptions = {}) {
+export function readFileSync(path: string, options: ReadFileOptions = {}) {
   if (!path) throw new TypeError('path is required!');
 
   if (!Object.prototype.hasOwnProperty.call(options,
@@ -293,7 +293,7 @@ async function _emptyDir(
   return results;
 }
 
-function emptyDir(
+export function emptyDir(
   path: string, options: ReadDirOptions & { exclude?: any[] } = {}) {
   if (!path) throw new TypeError('path is required!');
 
@@ -329,7 +329,7 @@ function _emptyDirSync(
   return results;
 }
 
-function emptyDirSync(
+export function emptyDirSync(
   path: string, options: ReadDirOptions & { exclude?: any[] } = {}) {
   if (!path) throw new TypeError('path is required!');
 
@@ -347,7 +347,7 @@ async function _rmdir(path: string) {
   return fsPromises.rmdir(path);
 }
 
-function rmdir(path: string) {
+export function rmdir(path: string) {
   if (!path) throw new TypeError('path is required!');
 
   return BlueBirdPromise.resolve(_rmdir(path));
@@ -370,13 +370,13 @@ function _rmdirSync(path: string) {
   fs.rmdirSync(path);
 }
 
-function rmdirSync(path: string) {
+export function rmdirSync(path: string) {
   if (!path) throw new TypeError('path is required!');
 
   _rmdirSync(path);
 }
 
-function watch(
+export function watch(
   path: string | ReadonlyArray<string>, options?: WatchOptions) {
   if (!path) throw new TypeError('path is required!');
 
@@ -416,13 +416,13 @@ async function _ensurePath(path: string): Promise<string> {
   return _findUnusedPath(path, files);
 }
 
-function ensurePath(path: string) {
+export function ensurePath(path: string) {
   if (!path) throw new TypeError('path is required!');
 
   return BlueBirdPromise.resolve(_ensurePath(path));
 }
 
-function ensurePathSync(path: string) {
+export function ensurePathSync(path: string) {
   if (!path) throw new TypeError('path is required!');
   if (!fs.existsSync(path)) return path;
 
@@ -431,7 +431,7 @@ function ensurePathSync(path: string) {
   return _findUnusedPath(path, files);
 }
 
-function ensureWriteStream(path: string, options?: string | {
+export function ensureWriteStream(path: string, options?: string | {
   flags?: string;
   encoding?: string;
   fd?: number;
@@ -447,7 +447,7 @@ function ensureWriteStream(path: string, options?: string | {
     .then(() => fs.createWriteStream(path, options));
 }
 
-function ensureWriteStreamSync(path: string, options?: string | {
+export function ensureWriteStreamSync(path: string, options?: string | {
   flags?: string;
   encoding?: string;
   fd?: number;
@@ -472,157 +472,108 @@ function ensureWriteStreamSync(path: string, options?: string | {
   });
 });
 
-exports.access = BlueBirdPromise.promisify(fs.access);
-exports.accessSync = fs.accessSync;
-
-// appendFile
-exports.appendFile = appendFile;
-exports.appendFileSync = appendFileSync;
+export const access = BlueBirdPromise.promisify(fs.access);
+export const accessSync = fs.accessSync;
 
 // chmod
-exports.chmod = BlueBirdPromise.promisify(fs.chmod);
-exports.chmodSync = fs.chmodSync;
-exports.fchmod = BlueBirdPromise.promisify(fs.fchmod);
-exports.fchmodSync = fs.fchmodSync;
-exports.lchmod = BlueBirdPromise.promisify(fs.lchmod);
-exports.lchmodSync = fs.lchmodSync;
+export const chmod = BlueBirdPromise.promisify(fs.chmod);
+export const chmodSync = fs.chmodSync;
+export const fchmod = BlueBirdPromise.promisify(fs.fchmod);
+export const fchmodSync = fs.fchmodSync;
+export const lchmod = BlueBirdPromise.promisify(fs.lchmod);
+export const lchmodSync = fs.lchmodSync;
 
 // chown
-exports.chown = BlueBirdPromise.promisify(fs.chown);
-exports.chownSync = fs.chownSync;
-exports.fchown = BlueBirdPromise.promisify(fs.fchown);
-exports.fchownSync = fs.fchownSync;
-exports.lchown = BlueBirdPromise.promisify(fs.lchown);
-exports.lchownSync = fs.lchownSync;
+export const chown = BlueBirdPromise.promisify(fs.chown);
+export const chownSync = fs.chownSync;
+export const fchown = BlueBirdPromise.promisify(fs.fchown);
+export const fchownSync = fs.fchownSync;
+export const lchown = BlueBirdPromise.promisify(fs.lchown);
+export const lchownSync = fs.lchownSync;
 
 // close
-exports.close = BlueBirdPromise.promisify(fs.close);
-exports.closeSync = fs.closeSync;
-
-// copy
-exports.copyDir = copyDir;
-exports.copyFile = copyFile;
+export const close = BlueBirdPromise.promisify(fs.close);
+export const closeSync = fs.closeSync;
 
 // createStream
-exports.createReadStream = fs.createReadStream;
-exports.createWriteStream = fs.createWriteStream;
-
-// emptyDir
-exports.emptyDir = emptyDir;
-exports.emptyDirSync = emptyDirSync;
-
-// ensurePath
-exports.ensurePath = ensurePath;
-exports.ensurePathSync = ensurePathSync;
-
-// ensureWriteStream
-exports.ensureWriteStream = ensureWriteStream;
-exports.ensureWriteStreamSync = ensureWriteStreamSync;
-
-// exists
-exports.exists = exists;
-exports.existsSync = existsSync;
+export const createReadStream = fs.createReadStream;
+export const createWriteStream = fs.createWriteStream;
 
 // fsync
-exports.fsync = BlueBirdPromise.promisify(fs.fsync);
-exports.fsyncSync = fs.fsyncSync;
+export const fsync = BlueBirdPromise.promisify(fs.fsync);
+export const fsyncSync = fs.fsyncSync;
 
 // link
-exports.link = BlueBirdPromise.promisify(fs.link);
-exports.linkSync = fs.linkSync;
-
-// listDir
-exports.listDir = listDir;
-exports.listDirSync = listDirSync;
+export const link = BlueBirdPromise.promisify(fs.link);
+export const linkSync = fs.linkSync;
 
 // mkdir
-exports.mkdir = BlueBirdPromise.promisify(fs.mkdir);
-exports.mkdirSync = fs.mkdirSync;
-
-// mkdirs
-exports.mkdirs = mkdirs;
-exports.mkdirsSync = mkdirsSync;
+export const mkdir = BlueBirdPromise.promisify(fs.mkdir);
+export const mkdirSync = fs.mkdirSync;
 
 // open
-exports.open = BlueBirdPromise.promisify(fs.open);
-exports.openSync = fs.openSync;
+export const open = BlueBirdPromise.promisify(fs.open);
+export const openSync = fs.openSync;
 
 // symlink
-exports.symlink = BlueBirdPromise.promisify(fs.symlink);
-exports.symlinkSync = fs.symlinkSync;
+export const symlink = BlueBirdPromise.promisify(fs.symlink);
+export const symlinkSync = fs.symlinkSync;
 
 // read
-exports.read = BlueBirdPromise.promisify(fs.read);
-exports.readSync = fs.readSync;
+export const read = BlueBirdPromise.promisify(fs.read);
+export const readSync = fs.readSync;
 
 // readdir
-exports.readdir = BlueBirdPromise.promisify(fs.readdir);
-exports.readdirSync = fs.readdirSync;
-
-// readFile
-exports.readFile = readFile;
-exports.readFileSync = readFileSync;
+export const readdir = BlueBirdPromise.promisify(fs.readdir);
+export const readdirSync = fs.readdirSync;
 
 // readlink
-exports.readlink = BlueBirdPromise.promisify(fs.readlink);
-exports.readlinkSync = fs.readlinkSync;
+export const readlink = BlueBirdPromise.promisify(fs.readlink);
+export const readlinkSync = fs.readlinkSync;
 
 // realpath
-exports.realpath = BlueBirdPromise.promisify(fs.realpath);
-exports.realpathSync = fs.realpathSync;
+export const realpath = BlueBirdPromise.promisify(fs.realpath);
+export const realpathSync = fs.realpathSync;
 
 // rename
-exports.rename = BlueBirdPromise.promisify(fs.rename);
-exports.renameSync = fs.renameSync;
-
-// rmdir
-exports.rmdir = rmdir;
-exports.rmdirSync = rmdirSync;
+export const rename = BlueBirdPromise.promisify(fs.rename);
+export const renameSync = fs.renameSync;
 
 // stat
-exports.stat = BlueBirdPromise.promisify(fs.stat);
-exports.statSync = fs.statSync;
-exports.fstat = BlueBirdPromise.promisify(fs.fstat);
-exports.fstatSync = fs.fstatSync;
-exports.lstat = BlueBirdPromise.promisify(fs.lstat);
-exports.lstatSync = fs.lstatSync;
+export const stat = BlueBirdPromise.promisify(fs.stat);
+export const statSync = fs.statSync;
+export const fstat = BlueBirdPromise.promisify(fs.fstat);
+export const fstatSync = fs.fstatSync;
+export const lstat = BlueBirdPromise.promisify(fs.lstat);
+export const lstatSync = fs.lstatSync;
 
 // truncate
-exports.truncate = BlueBirdPromise.promisify(fs.truncate);
-exports.truncateSync = fs.truncateSync;
-exports.ftruncate = BlueBirdPromise.promisify(fs.ftruncate);
-exports.ftruncateSync = fs.ftruncateSync;
+export const truncate = BlueBirdPromise.promisify(fs.truncate);
+export const truncateSync = fs.truncateSync;
+export const ftruncate = BlueBirdPromise.promisify(fs.ftruncate);
+export const ftruncateSync = fs.ftruncateSync;
 
 // unlink
-exports.unlink = BlueBirdPromise.promisify(fs.unlink);
-exports.unlinkSync = fs.unlinkSync;
+export const unlink = BlueBirdPromise.promisify(fs.unlink);
+export const unlinkSync = fs.unlinkSync;
 
 // utimes
-exports.utimes = BlueBirdPromise.promisify(fs.utimes);
-exports.utimesSync = fs.utimesSync;
-exports.futimes = BlueBirdPromise.promisify(fs.futimes);
-exports.futimesSync = fs.futimesSync;
+export const utimes = BlueBirdPromise.promisify(fs.utimes);
+export const utimesSync = fs.utimesSync;
+export const futimes = BlueBirdPromise.promisify(fs.futimes);
+export const futimesSync = fs.futimesSync;
 
 // watch
-exports.watch = watch;
-exports.watchFile = fs.watchFile;
-exports.unwatchFile = fs.unwatchFile;
+export const watchFile = fs.watchFile;
+export const unwatchFile = fs.unwatchFile;
 
 // write
-exports.write = BlueBirdPromise.promisify(fs.write);
-exports.writeSync = fs.writeSync;
-
-// writeFile
-exports.writeFile = writeFile;
-exports.writeFileSync = writeFileSync;
+export const write = BlueBirdPromise.promisify(fs.write);
+export const writeSync = fs.writeSync;
 
 // Static classes
-exports.Stats = fs.Stats;
-exports.ReadStream = fs.ReadStream;
-exports.WriteStream = fs.WriteStream;
-exports.FileReadStream = fs.FileReadStream;
-exports.FileWriteStream = fs.FileWriteStream;
-
-// util
-exports.escapeBOM = escapeBOM;
-exports.escapeEOL = escapeEOL;
+export const Stats = fs.Stats;
+export const ReadStream = fs.ReadStream;
+export const WriteStream = fs.WriteStream;
+export const FileReadStream = fs.FileReadStream;
+export const FileWriteStream = fs.FileWriteStream;
