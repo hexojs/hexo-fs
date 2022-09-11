@@ -472,108 +472,108 @@ export function ensureWriteStreamSync(path: string, options?: string | {
   });
 });
 
-exports.access = BlueBirdPromise.promisify(fs.access);
-exports.accessSync = fs.accessSync;
+export const access = BlueBirdPromise.promisify(fs.access);
+export const accessSync = fs.accessSync;
 
 // chmod
-exports.chmod = BlueBirdPromise.promisify(fs.chmod);
-exports.chmodSync = fs.chmodSync;
-exports.fchmod = BlueBirdPromise.promisify(fs.fchmod);
-exports.fchmodSync = fs.fchmodSync;
-exports.lchmod = BlueBirdPromise.promisify(fs.lchmod);
-exports.lchmodSync = fs.lchmodSync;
+export const chmod = BlueBirdPromise.promisify(fs.chmod);
+export const chmodSync = fs.chmodSync;
+export const fchmod = BlueBirdPromise.promisify(fs.fchmod);
+export const fchmodSync = fs.fchmodSync;
+export const lchmod = BlueBirdPromise.promisify(fs.lchmod);
+export const lchmodSync = fs.lchmodSync;
 
 // chown
-exports.chown = BlueBirdPromise.promisify(fs.chown);
-exports.chownSync = fs.chownSync;
-exports.fchown = BlueBirdPromise.promisify(fs.fchown);
-exports.fchownSync = fs.fchownSync;
-exports.lchown = BlueBirdPromise.promisify(fs.lchown);
-exports.lchownSync = fs.lchownSync;
+export const chown = BlueBirdPromise.promisify(fs.chown);
+export const chownSync = fs.chownSync;
+export const fchown = BlueBirdPromise.promisify(fs.fchown);
+export const fchownSync = fs.fchownSync;
+export const lchown = BlueBirdPromise.promisify(fs.lchown);
+export const lchownSync = fs.lchownSync;
 
 // close
-exports.close = BlueBirdPromise.promisify(fs.close);
-exports.closeSync = fs.closeSync;
+export const close = BlueBirdPromise.promisify(fs.close);
+export const closeSync = fs.closeSync;
 
 // createStream
-exports.createReadStream = fs.createReadStream;
-exports.createWriteStream = fs.createWriteStream;
+export const createReadStream = fs.createReadStream;
+export const createWriteStream = fs.createWriteStream;
 
 // fsync
-exports.fsync = BlueBirdPromise.promisify(fs.fsync);
-exports.fsyncSync = fs.fsyncSync;
+export const fsync = BlueBirdPromise.promisify(fs.fsync);
+export const fsyncSync = fs.fsyncSync;
 
 // link
-exports.link = BlueBirdPromise.promisify(fs.link);
-exports.linkSync = fs.linkSync;
+export const link = BlueBirdPromise.promisify(fs.link);
+export const linkSync = fs.linkSync;
 
 // mkdir
-exports.mkdir = BlueBirdPromise.promisify(fs.mkdir);
-exports.mkdirSync = fs.mkdirSync;
+export const mkdir = BlueBirdPromise.promisify(fs.mkdir);
+export const mkdirSync = fs.mkdirSync;
 
 // open
-exports.open = BlueBirdPromise.promisify(fs.open);
-exports.openSync = fs.openSync;
+export const open = BlueBirdPromise.promisify(fs.open);
+export const openSync = fs.openSync;
 
 // symlink
-exports.symlink = BlueBirdPromise.promisify(fs.symlink);
-exports.symlinkSync = fs.symlinkSync;
+export const symlink = BlueBirdPromise.promisify(fs.symlink);
+export const symlinkSync = fs.symlinkSync;
 
 // read
-exports.read = BlueBirdPromise.promisify(fs.read);
-exports.readSync = fs.readSync;
+export const read = BlueBirdPromise.promisify(fs.read);
+export const readSync = fs.readSync;
 
 // readdir
-exports.readdir = BlueBirdPromise.promisify(fs.readdir);
-exports.readdirSync = fs.readdirSync;
+export const readdir = BlueBirdPromise.promisify(fs.readdir);
+export const readdirSync = fs.readdirSync;
 
 // readlink
-exports.readlink = BlueBirdPromise.promisify(fs.readlink);
-exports.readlinkSync = fs.readlinkSync;
+export const readlink = BlueBirdPromise.promisify(fs.readlink);
+export const readlinkSync = fs.readlinkSync;
 
 // realpath
-exports.realpath = BlueBirdPromise.promisify(fs.realpath);
-exports.realpathSync = fs.realpathSync;
+export const realpath = BlueBirdPromise.promisify(fs.realpath);
+export const realpathSync = fs.realpathSync;
 
 // rename
-exports.rename = BlueBirdPromise.promisify(fs.rename);
-exports.renameSync = fs.renameSync;
+export const rename = BlueBirdPromise.promisify(fs.rename);
+export const renameSync = fs.renameSync;
 
 // stat
-exports.stat = BlueBirdPromise.promisify(fs.stat);
-exports.statSync = fs.statSync;
-exports.fstat = BlueBirdPromise.promisify(fs.fstat);
-exports.fstatSync = fs.fstatSync;
-exports.lstat = BlueBirdPromise.promisify(fs.lstat);
-exports.lstatSync = fs.lstatSync;
+export const stat = BlueBirdPromise.promisify(fs.stat);
+export const statSync = fs.statSync;
+export const fstat = BlueBirdPromise.promisify(fs.fstat);
+export const fstatSync = fs.fstatSync;
+export const lstat = BlueBirdPromise.promisify(fs.lstat);
+export const lstatSync = fs.lstatSync;
 
 // truncate
-exports.truncate = BlueBirdPromise.promisify(fs.truncate);
-exports.truncateSync = fs.truncateSync;
-exports.ftruncate = BlueBirdPromise.promisify(fs.ftruncate);
-exports.ftruncateSync = fs.ftruncateSync;
+export const truncate = BlueBirdPromise.promisify(fs.truncate);
+export const truncateSync = fs.truncateSync;
+export const ftruncate = BlueBirdPromise.promisify(fs.ftruncate);
+export const ftruncateSync = fs.ftruncateSync;
 
 // unlink
-exports.unlink = BlueBirdPromise.promisify(fs.unlink);
-exports.unlinkSync = fs.unlinkSync;
+export const unlink = BlueBirdPromise.promisify(fs.unlink);
+export const unlinkSync = fs.unlinkSync;
 
 // utimes
-exports.utimes = BlueBirdPromise.promisify(fs.utimes);
-exports.utimesSync = fs.utimesSync;
-exports.futimes = BlueBirdPromise.promisify(fs.futimes);
-exports.futimesSync = fs.futimesSync;
+export const utimes = BlueBirdPromise.promisify(fs.utimes);
+export const utimesSync = fs.utimesSync;
+export const futimes = BlueBirdPromise.promisify(fs.futimes);
+export const futimesSync = fs.futimesSync;
 
 // watch
-exports.watchFile = fs.watchFile;
-exports.unwatchFile = fs.unwatchFile;
+export const watchFile = fs.watchFile;
+export const unwatchFile = fs.unwatchFile;
 
 // write
-exports.write = BlueBirdPromise.promisify(fs.write);
-exports.writeSync = fs.writeSync;
+export const write = BlueBirdPromise.promisify(fs.write);
+export const writeSync = fs.writeSync;
 
 // Static classes
-exports.Stats = fs.Stats;
-exports.ReadStream = fs.ReadStream;
-exports.WriteStream = fs.WriteStream;
-exports.FileReadStream = fs.FileReadStream;
-exports.FileWriteStream = fs.FileWriteStream;
+export const Stats = fs.Stats;
+export const ReadStream = fs.ReadStream;
+export const WriteStream = fs.WriteStream;
+export const FileReadStream = fs.FileReadStream;
+export const FileWriteStream = fs.FileWriteStream;
