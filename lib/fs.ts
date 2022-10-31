@@ -230,7 +230,7 @@ export function escapeFileContent(content) {
   return escapeBOM(escapeEOL(content));
 }
 
-export type ReadFileOptions = { encoding?: string | null; flag?: string; escape?: string }
+export type ReadFileOptions = { encoding?: BufferEncoding | null; flag?: string; escape?: string }
 
 async function _readFile(path: string, options: ReadFileOptions | null = {}) {
   if (!Object.prototype.hasOwnProperty.call(options,
@@ -431,9 +431,9 @@ export function ensurePathSync(path: string) {
   return _findUnusedPath(path, files);
 }
 
-export function ensureWriteStream(path: string, options?: string | {
+export function ensureWriteStream(path: string, options?: BufferEncoding | {
   flags?: string;
-  encoding?: string;
+  encoding?: BufferEncoding;
   fd?: number;
   mode?: number;
   autoClose?: boolean;
@@ -447,9 +447,9 @@ export function ensureWriteStream(path: string, options?: string | {
     .then(() => fs.createWriteStream(path, options));
 }
 
-export function ensureWriteStreamSync(path: string, options?: string | {
+export function ensureWriteStreamSync(path: string, options?: BufferEncoding | {
   flags?: string;
-  encoding?: string;
+  encoding?: BufferEncoding;
   fd?: number;
   mode?: number;
   autoClose?: boolean;
@@ -575,5 +575,3 @@ export const writeSync = fs.writeSync;
 export const Stats = fs.Stats;
 export const ReadStream = fs.ReadStream;
 export const WriteStream = fs.WriteStream;
-export const FileReadStream = fs.FileReadStream;
-export const FileWriteStream = fs.FileWriteStream;
