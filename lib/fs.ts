@@ -524,7 +524,7 @@ export const read = BlueBirdPromise.promisify(fs.read);
 export const readSync = fs.readSync;
 
 // readdir
-export const readdir = BlueBirdPromise.promisify(fs.readdir);
+export const readdir = BlueBirdPromise.promisify<string[], fs.PathLike>(fs.readdir);
 export const readdirSync = fs.readdirSync;
 
 // readlink
@@ -536,11 +536,11 @@ export const realpath = BlueBirdPromise.promisify(fs.realpath);
 export const realpathSync = fs.realpathSync;
 
 // rename
-export const rename = BlueBirdPromise.promisify(fs.rename);
+export const rename = BlueBirdPromise.promisify<void, fs.PathLike, fs.PathLike>(fs.rename);
 export const renameSync = fs.renameSync;
 
 // stat
-export const stat = BlueBirdPromise.promisify(fs.stat);
+export const stat = BlueBirdPromise.promisify<fs.Stats, fs.PathLike>(fs.stat);
 export const statSync = fs.statSync;
 export const fstat = BlueBirdPromise.promisify(fs.fstat);
 export const fstatSync = fs.fstatSync;
@@ -554,7 +554,7 @@ export const ftruncate = BlueBirdPromise.promisify(fs.ftruncate);
 export const ftruncateSync = fs.ftruncateSync;
 
 // unlink
-export const unlink = BlueBirdPromise.promisify(fs.unlink);
+export const unlink = BlueBirdPromise.promisify<void, fs.PathLike>(fs.unlink);
 export const unlinkSync = fs.unlinkSync;
 
 // utimes
