@@ -33,7 +33,7 @@
     "bluebird": "^3.7.2",
     "chokidar": "^3.5.3",
     "graceful-fs": "^4.2.10",
-    "hexo-util": "^2.7.0"
+    "hexo-util": "^3.0.0"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.36",
