@@ -8,7 +8,7 @@ updates:
     - dependency-name: "@types/node"
     - dependency-name: "*"
       update-types: ["version-update:semver-patch", "version-update:semver-minor"]
-  open-pull-requests-limit: 3
+  open-pull-requests-limit: 20
 - package-ecosystem: github-actions
   directory: "/"
   schedule:
