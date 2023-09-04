@@ -28,6 +28,14 @@ function createDummyFolder(path) {
   return Promise.map(Object.keys(filesMap), key => fs.writeFile(join(path, key), filesMap[key]));
 }
 
+function createAnotherDummyFolder(path) {
+  const filesMap = {
+    [join('folder', '.txt')]: 'txt',
+    [join('folder', '.js')]: 'js',
+  };
+  return Promise.map(Object.keys(filesMap), key => fs.writeFile(join(path, key), filesMap[key]));
+}
+
 describe('fs', () => {
   const tmpDir = join(__dirname, 'fs_tmp');
 
@@ -47,6 +55,25 @@ describe('fs', () => {
     } catch (err) {
       err.message.should.eql('path is required!');
     }
+  });
+
+  it('existsSync()', () => {
+    const exist = fs.existsSync(tmpDir);
+    exist.should.eql(true);
+  });
+
+  it('existsSync() - path is required', () => {
+    try {
+      fs.existsSync();
+      should.fail();
+    } catch (err) {
+      err.message.should.eql('path is required!');
+    }
+  });
+
+  it('existsSync() - not exist', () => {
+    const exist = fs.existsSync(join(__dirname, 'fs_tmp1'));
+    exist.should.eql(false);
   });
 
   it('mkdirs()', async () => {
@@ -414,7 +441,7 @@ describe('fs', () => {
     const target = join(tmpDir, 'test');
 
     await createDummyFolder(target);
-    const files = fs.listDirSync(target, {ignorePattern: /\.js/});
+    const files = fs.listDirSync(target, { ignorePattern: /\.js/ });
     files.should.eql(['e.txt', join('folder', 'h.txt')]);
 
     await fs.rmdir(target);
@@ -463,6 +490,17 @@ describe('fs', () => {
     await fs.unlink(target);
   });
 
+  it('readFile() - do not escape', async () => {
+    const target = join(tmpDir, 'test.txt');
+    const body = 'foo\r\nbar';
+
+    await fs.writeFile(target, body);
+    const result = await fs.readFile(target, { escape: '' });
+    result.should.eql('foo\r\nbar');
+
+    await fs.unlink(target);
+  });
+
   it('readFileSync()', async () => {
     const target = join(tmpDir, 'test.txt');
     const body = 'test';
@@ -505,6 +543,17 @@ describe('fs', () => {
     await fs.unlink(target);
   });
 
+  it('readFileSync() - do not escape', async () => {
+    const target = join(tmpDir, 'test.txt');
+    const body = 'foo\r\nbar';
+
+    await fs.writeFile(target, body);
+    const result = fs.readFileSync(target, { escape: '' });
+    result.should.eql('foo\r\nbar');
+
+    await fs.unlink(target);
+  });
+
   it('unlink()', async () => {
     const target = join(tmpDir, 'test-unlink');
 
@@ -540,6 +589,27 @@ describe('fs', () => {
       join('folder', 'h.txt'),
       join('folder', 'i.js')
     ]);
+
+    const paths = Object.keys(checkExistsMap);
+    for (const path of paths) {
+      const exist = await fs.exists(join(target, path));
+      exist.should.eql(checkExistsMap[path]);
+    }
+
+    await fs.rmdir(target);
+  });
+
+  it('emptyDir() - empty nothing', async () => {
+    const target = join(tmpDir, 'test');
+
+    const checkExistsMap = {
+      [join('folder', '.txt')]: true,
+      [join('folder', '.js')]: true,
+    };
+
+    await createAnotherDummyFolder(target);
+    const files = await fs.emptyDir(target);
+    files.should.eql([]);
 
     const paths = Object.keys(checkExistsMap);
     for (const path of paths) {
