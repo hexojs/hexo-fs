@@ -279,11 +279,11 @@ async function _emptyDir(
     const currentPath = join(parent, item.name);
 
     if (item.isDirectory()) {
-      return _emptyDir(fullPath, currentPath, options).then(files => {
-        if (!files.length) {
+      return _emptyDir(fullPath, currentPath, options).then(async files => {
+        results.push(...files);
+        if (!(await fsPromises.readdir(fullPath)).length) {
           return fsPromises.rmdir(fullPath);
         }
-        results.push(...files);
       });
     }
     results.push(currentPath);
