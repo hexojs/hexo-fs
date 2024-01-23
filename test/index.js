@@ -5,7 +5,7 @@ should();
 
 const { join, dirname } = require('path');
 const Promise = require('bluebird');
-const fs = require('../lib/fs');
+const fs = require('../lib/fs.ts');
 
 function createDummyFolder(path) {
   const filesMap = {
@@ -31,7 +31,7 @@ function createDummyFolder(path) {
 function createAnotherDummyFolder(path) {
   const filesMap = {
     [join('folder', '.txt')]: 'txt',
-    [join('folder', '.js')]: 'js',
+    [join('folder', '.js')]: 'js'
   };
   return Promise.map(Object.keys(filesMap), key => fs.writeFile(join(path, key), filesMap[key]));
 }
@@ -604,7 +604,7 @@ describe('fs', () => {
 
     const checkExistsMap = {
       [join('folder', '.txt')]: true,
-      [join('folder', '.js')]: true,
+      [join('folder', '.js')]: true
     };
 
     await createAnotherDummyFolder(target);
