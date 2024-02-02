@@ -1,8 +1,8 @@
 # hexo-fs
 
-[![Build Status](https://github.com/hexojs/hexo-fs/workflows/Tester/badge.svg)](https://github.com/hexojs/hexo-fs/actions?query=workflow%3ATester)
+[![CI](https://github.com/hexojs/hexo-fs/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/hexojs/hexo-fs/actions/workflows/ci.yml)
 [![NPM version](https://badge.fury.io/js/hexo-fs.svg)](https://www.npmjs.com/package/hexo-fs)
-[![Coverage Status](https://img.shields.io/coveralls/hexojs/hexo-fs.svg)](https://coveralls.io/r/hexojs/hexo-fs?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/hexojs/hexo-fs/badge.svg)](https://coveralls.io/github/hexojs/hexo-fs)
 
 File system module for [Hexo].
 
