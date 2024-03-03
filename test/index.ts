@@ -3,10 +3,10 @@ import { join, dirname } from 'path';
 // @ts-ignore
 import Promise from 'bluebird';
 import * as fs from '../lib/fs';
-import { FSWatcher } from 'chokidar';
+import type { FSWatcher } from 'chokidar';
 const should = chai.should();
 
-function createDummyFolder(path) {
+function createDummyFolder(path: string) {
   const filesMap = {
     // Normal files in a hidden folder
     [join('.hidden', 'a.txt')]: 'a',
@@ -27,7 +27,7 @@ function createDummyFolder(path) {
   return Promise.map(Object.keys(filesMap), key => fs.writeFile(join(path, key), filesMap[key]));
 }
 
-function createAnotherDummyFolder(path) {
+function createAnotherDummyFolder(path: string) {
   const filesMap = {
     [join('folder', '.txt')]: 'txt',
     [join('folder', '.js')]: 'js'
