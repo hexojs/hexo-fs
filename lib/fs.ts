@@ -51,7 +51,7 @@ function checkParent(path: string) {
 
 export function writeFile(
   path: string,
-  data: any,
+  data?: any,
   options?: WriteFileOptions
 ) {
   if (!path) throw new TypeError('path is required!');

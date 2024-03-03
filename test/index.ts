@@ -1,11 +1,10 @@
-'use strict';
-
-const { should } = require('chai');
-should();
-
-const { join, dirname } = require('path');
-const Promise = require('bluebird');
-const fs = require('../lib/fs.ts');
+import chai from 'chai';
+import { join, dirname } from 'path';
+// @ts-ignore
+import Promise from 'bluebird';
+import * as fs from '../lib/fs';
+import { FSWatcher } from 'chokidar';
+const should = chai.should();
 
 function createDummyFolder(path) {
   const filesMap = {
@@ -50,6 +49,7 @@ describe('fs', () => {
 
   it('exists() - path is required', async () => {
     try {
+      // @ts-ignore
       await fs.exists();
       should.fail();
     } catch (err) {
@@ -64,6 +64,7 @@ describe('fs', () => {
 
   it('existsSync() - path is required', () => {
     try {
+      // @ts-ignore
       fs.existsSync();
       should.fail();
     } catch (err) {
@@ -88,6 +89,7 @@ describe('fs', () => {
 
   it('mkdirs() - path is required', async () => {
     try {
+      // @ts-ignore
       await fs.mkdirs();
       should.fail();
     } catch (err) {
@@ -108,6 +110,7 @@ describe('fs', () => {
 
   it('mkdirsSync() - path is required', () => {
     try {
+      // @ts-ignore
       fs.mkdirsSync();
       should.fail();
     } catch (err) {
@@ -129,6 +132,7 @@ describe('fs', () => {
 
   it('writeFile() - path is required', async () => {
     try {
+      // @ts-ignore
       await fs.writeFile();
       should.fail();
     } catch (err) {
@@ -150,6 +154,7 @@ describe('fs', () => {
 
   it('writeFileSync() - path is required', () => {
     try {
+      // @ts-ignore
       fs.writeFileSync();
       should.fail();
     } catch (err) {
@@ -174,6 +179,7 @@ describe('fs', () => {
 
   it('appendFile() - path is required', async () => {
     try {
+      // @ts-ignore
       await fs.appendFile();
       should.fail();
     } catch (err) {
@@ -197,6 +203,7 @@ describe('fs', () => {
 
   it('appendFileSync() - path is required', () => {
     try {
+      // @ts-ignore
       fs.appendFileSync();
       should.fail();
     } catch (err) {
@@ -223,6 +230,7 @@ describe('fs', () => {
 
   it('copyFile() - src is required', async () => {
     try {
+      // @ts-ignore
       await fs.copyFile();
       should.fail();
     } catch (err) {
@@ -232,6 +240,7 @@ describe('fs', () => {
 
   it('copyFile() - dest is required', async () => {
     try {
+      // @ts-ignore
       await fs.copyFile('123');
       should.fail();
     } catch (err) {
@@ -254,9 +263,9 @@ describe('fs', () => {
     const files = await fs.copyDir(src, dest);
     files.should.eql(filenames);
 
-    const result = [];
+    const result: string[] = [];
     for (const file of files) {
-      const output = await fs.readFile(join(dest, file));
+      const output = await fs.readFile(join(dest, file)) as string;
       result.push(output);
     }
     result.should.eql(['e', 'f', 'h', 'i']);
@@ -266,6 +275,7 @@ describe('fs', () => {
 
   it('copyDir() - src is required', async () => {
     try {
+      // @ts-ignore
       await fs.copyDir();
       should.fail();
     } catch (err) {
@@ -275,6 +285,7 @@ describe('fs', () => {
 
   it('copyDir() - dest is required', async () => {
     try {
+      // @ts-ignore
       await fs.copyDir('123');
       should.fail();
     } catch (err) {
@@ -302,9 +313,9 @@ describe('fs', () => {
     const files = await fs.copyDir(src, dest, { ignoreHidden: false });
     files.should.have.members(filenames);
 
-    const result = [];
+    const result: string[] = [];
     for (const file of files) {
-      const output = await fs.readFile(join(dest, file));
+      const output = await fs.readFile(join(dest, file)) as string;
       result.push(output);
     }
     result.should.have.members(['a', 'b', 'd', 'e', 'f', 'g', 'h', 'i', 'j']);
@@ -322,9 +333,9 @@ describe('fs', () => {
     const files = await fs.copyDir(src, dest, { ignorePattern: /\.js/ });
     files.should.eql(filenames);
 
-    const result = [];
+    const result: string[] = [];
     for (const file of files) {
-      const output = await fs.readFile(join(dest, file));
+      const output = await fs.readFile(join(dest, file)) as string;
       result.push(output);
     }
     result.should.eql(['e', 'h']);
@@ -350,6 +361,7 @@ describe('fs', () => {
 
   it('listDir() - path is required', async () => {
     try {
+      // @ts-ignore
       await fs.listDir();
       should.fail();
     } catch (err) {
@@ -408,6 +420,7 @@ describe('fs', () => {
 
   it('listDirSync() - path is required', () => {
     try {
+      // @ts-ignore
       fs.listDirSync();
       should.fail();
     } catch (err) {
@@ -460,6 +473,7 @@ describe('fs', () => {
 
   it('readFile() - path is required', async () => {
     try {
+      // @ts-ignore
       await fs.readFile();
       should.fail();
     } catch (err) {
@@ -514,6 +528,7 @@ describe('fs', () => {
 
   it('readFileSync() - path is required', () => {
     try {
+      // @ts-ignore
       fs.readFileSync();
       should.fail();
     } catch (err) {
@@ -622,6 +637,7 @@ describe('fs', () => {
 
   it('emptyDir() - path is required', async () => {
     try {
+      // @ts-ignore
       await fs.emptyDir();
       should.fail();
     } catch (err) {
@@ -747,6 +763,7 @@ describe('fs', () => {
 
   it('emptyDirSync() - path is required', () => {
     try {
+      // @ts-ignore
       fs.emptyDirSync();
       should.fail();
     } catch (err) {
@@ -848,6 +865,7 @@ describe('fs', () => {
 
   it('rmdir() - path is required', async () => {
     try {
+      // @ts-ignore
       await fs.rmdir();
       should.fail();
     } catch (err) {
@@ -866,6 +884,7 @@ describe('fs', () => {
 
   it('rmdirSync() - path is required', () => {
     try {
+      // @ts-ignore
       fs.rmdirSync();
       should.fail();
     } catch (err) {
@@ -876,7 +895,7 @@ describe('fs', () => {
   it('watch()', async () => {
     const target = join(tmpDir, 'test.txt');
 
-    const testerWrap = _watcher => new Promise((resolve, reject) => {
+    const testerWrap = (_watcher: FSWatcher) => new Promise<string>((resolve, reject) => {
       _watcher.on('add', resolve).on('error', reject);
     });
 
@@ -895,6 +914,7 @@ describe('fs', () => {
 
   it('watch() - path is required', async () => {
     try {
+      // @ts-ignore
       await fs.watch();
       should.fail();
     } catch (err) {
@@ -921,6 +941,7 @@ describe('fs', () => {
 
   it('ensurePath() - path is required', async () => {
     try {
+      // @ts-ignore
       await fs.ensurePath();
       should.fail();
     } catch (err) {
@@ -948,6 +969,7 @@ describe('fs', () => {
 
   it('ensurePathSync() - path is required', () => {
     try {
+      // @ts-ignore
       fs.ensurePathSync();
       should.fail();
     } catch (err) {
