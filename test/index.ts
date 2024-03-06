@@ -1,7 +1,6 @@
 import chai from 'chai';
 import { join, dirname } from 'path';
-// @ts-ignore
-import Promise from 'bluebird';
+import BlueBirdPromise from 'bluebird';
 import * as fs from '../lib/fs';
 import type { FSWatcher } from 'chokidar';
 const should = chai.should();
@@ -24,7 +23,7 @@ function createDummyFolder(path: string) {
     // A hidden files in a normal folder
     [join('folder', '.j')]: 'j'
   };
-  return Promise.map(Object.keys(filesMap), key => fs.writeFile(join(path, key), filesMap[key]));
+  return BlueBirdPromise.map(Object.keys(filesMap), key => fs.writeFile(join(path, key), filesMap[key]));
 }
 
 function createAnotherDummyFolder(path: string) {
@@ -32,7 +31,7 @@ function createAnotherDummyFolder(path: string) {
     [join('folder', '.txt')]: 'txt',
     [join('folder', '.js')]: 'js'
   };
-  return Promise.map(Object.keys(filesMap), key => fs.writeFile(join(path, key), filesMap[key]));
+  return BlueBirdPromise.map(Object.keys(filesMap), key => fs.writeFile(join(path, key), filesMap[key]));
 }
 
 describe('fs', () => {
@@ -222,7 +221,7 @@ describe('fs', () => {
     const result = await fs.readFile(dest);
     result.should.eql(body);
 
-    await Promise.all([
+    await BlueBirdPromise.all([
       fs.unlink(src),
       fs.rmdir(join(tmpDir, 'a'))
     ]);
@@ -270,7 +269,7 @@ describe('fs', () => {
     }
     result.should.eql(['e', 'f', 'h', 'i']);
 
-    await Promise.all([fs.rmdir(src), fs.rmdir(dest)]);
+    await BlueBirdPromise.all([fs.rmdir(src), fs.rmdir(dest)]);
   });
 
   it('copyDir() - src is required', async () => {
@@ -320,7 +319,7 @@ describe('fs', () => {
     }
     result.should.have.members(['a', 'b', 'd', 'e', 'f', 'g', 'h', 'i', 'j']);
 
-    await Promise.all([fs.rmdir(src), fs.rmdir(dest)]);
+    await BlueBirdPromise.all([fs.rmdir(src), fs.rmdir(dest)]);
   });
 
   it('copyDir() - ignorePattern', async () => {
@@ -340,7 +339,7 @@ describe('fs', () => {
     }
     result.should.eql(['e', 'h']);
 
-    await Promise.all([fs.rmdir(src), fs.rmdir(dest)]);
+    await BlueBirdPromise.all([fs.rmdir(src), fs.rmdir(dest)]);
   });
 
   it('listDir()', async () => {
@@ -895,12 +894,12 @@ describe('fs', () => {
   it('watch()', async () => {
     const target = join(tmpDir, 'test.txt');
 
-    const testerWrap = (_watcher: FSWatcher) => new Promise<string>((resolve, reject) => {
+    const testerWrap = (_watcher: FSWatcher) => new BlueBirdPromise<string>((resolve, reject) => {
       _watcher.on('add', resolve).on('error', reject);
     });
 
     const watcher = await fs.watch(tmpDir);
-    const result = await Promise.all([
+    const result = await BlueBirdPromise.all([
       testerWrap(watcher),
       fs.writeFile(target, 'test')
     ]);
@@ -926,7 +925,7 @@ describe('fs', () => {
     const target = join(tmpDir, 'test');
     const filenames = ['foo.txt', 'foo-1.txt', 'foo-2.md', 'bar.txt'];
 
-    await Promise.map(filenames, path => fs.writeFile(join(target, path)));
+    await BlueBirdPromise.map(filenames, path => fs.writeFile(join(target, path)));
     const result = await fs.ensurePath(join(target, 'foo.txt'));
     result.should.eql(join(target, 'foo-2.txt'));
 
@@ -953,7 +952,7 @@ describe('fs', () => {
     const target = join(tmpDir, 'test');
     const filenames = ['foo.txt', 'foo-1.txt', 'foo-2.md', 'bar.txt'];
 
-    await Promise.map(filenames, path => fs.writeFile(join(target, path)));
+    await BlueBirdPromise.map(filenames, path => fs.writeFile(join(target, path)));
     const path = fs.ensurePathSync(join(target, 'foo.txt'));
     path.should.eql(join(target, 'foo-2.txt'));
 
