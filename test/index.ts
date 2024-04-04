@@ -48,7 +48,7 @@ describe('fs', () => {
 
   it('exists() - path is required', async () => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       await fs.exists();
       should.fail();
     } catch (err) {
@@ -63,7 +63,7 @@ describe('fs', () => {
 
   it('existsSync() - path is required', () => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       fs.existsSync();
       should.fail();
     } catch (err) {
@@ -88,7 +88,7 @@ describe('fs', () => {
 
   it('mkdirs() - path is required', async () => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       await fs.mkdirs();
       should.fail();
     } catch (err) {
@@ -109,7 +109,7 @@ describe('fs', () => {
 
   it('mkdirsSync() - path is required', () => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       fs.mkdirsSync();
       should.fail();
     } catch (err) {
@@ -131,7 +131,7 @@ describe('fs', () => {
 
   it('writeFile() - path is required', async () => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       await fs.writeFile();
       should.fail();
     } catch (err) {
@@ -153,7 +153,7 @@ describe('fs', () => {
 
   it('writeFileSync() - path is required', () => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       fs.writeFileSync();
       should.fail();
     } catch (err) {
@@ -178,7 +178,7 @@ describe('fs', () => {
 
   it('appendFile() - path is required', async () => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       await fs.appendFile();
       should.fail();
     } catch (err) {
@@ -202,7 +202,7 @@ describe('fs', () => {
 
   it('appendFileSync() - path is required', () => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       fs.appendFileSync();
       should.fail();
     } catch (err) {
@@ -229,7 +229,7 @@ describe('fs', () => {
 
   it('copyFile() - src is required', async () => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       await fs.copyFile();
       should.fail();
     } catch (err) {
@@ -239,7 +239,7 @@ describe('fs', () => {
 
   it('copyFile() - dest is required', async () => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       await fs.copyFile('123');
       should.fail();
     } catch (err) {
@@ -274,7 +274,7 @@ describe('fs', () => {
 
   it('copyDir() - src is required', async () => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       await fs.copyDir();
       should.fail();
     } catch (err) {
@@ -284,7 +284,7 @@ describe('fs', () => {
 
   it('copyDir() - dest is required', async () => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       await fs.copyDir('123');
       should.fail();
     } catch (err) {
@@ -360,7 +360,7 @@ describe('fs', () => {
 
   it('listDir() - path is required', async () => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       await fs.listDir();
       should.fail();
     } catch (err) {
@@ -419,7 +419,7 @@ describe('fs', () => {
 
   it('listDirSync() - path is required', () => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       fs.listDirSync();
       should.fail();
     } catch (err) {
@@ -472,7 +472,7 @@ describe('fs', () => {
 
   it('readFile() - path is required', async () => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       await fs.readFile();
       should.fail();
     } catch (err) {
@@ -527,7 +527,7 @@ describe('fs', () => {
 
   it('readFileSync() - path is required', () => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       fs.readFileSync();
       should.fail();
     } catch (err) {
@@ -636,7 +636,7 @@ describe('fs', () => {
 
   it('emptyDir() - path is required', async () => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       await fs.emptyDir();
       should.fail();
     } catch (err) {
@@ -762,7 +762,7 @@ describe('fs', () => {
 
   it('emptyDirSync() - path is required', () => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       fs.emptyDirSync();
       should.fail();
     } catch (err) {
@@ -864,7 +864,7 @@ describe('fs', () => {
 
   it('rmdir() - path is required', async () => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       await fs.rmdir();
       should.fail();
     } catch (err) {
@@ -883,7 +883,7 @@ describe('fs', () => {
 
   it('rmdirSync() - path is required', () => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       fs.rmdirSync();
       should.fail();
     } catch (err) {
@@ -913,7 +913,7 @@ describe('fs', () => {
 
   it('watch() - path is required', async () => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       await fs.watch();
       should.fail();
     } catch (err) {
@@ -940,7 +940,7 @@ describe('fs', () => {
 
   it('ensurePath() - path is required', async () => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       await fs.ensurePath();
       should.fail();
     } catch (err) {
@@ -968,7 +968,7 @@ describe('fs', () => {
 
   it('ensurePathSync() - path is required', () => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       fs.ensurePathSync();
       should.fail();
     } catch (err) {
