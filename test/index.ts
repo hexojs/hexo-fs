@@ -1,13 +1,11 @@
-'use strict';
+import chai from 'chai';
+import { join, dirname } from 'path';
+import BlueBirdPromise from 'bluebird';
+import * as fs from '../lib/fs';
+import type { FSWatcher } from 'chokidar';
+const should = chai.should();
 
-const { should } = require('chai');
-should();
-
-const { join, dirname } = require('path');
-const Promise = require('bluebird');
-const fs = require('../lib/fs.ts');
-
-function createDummyFolder(path) {
+function createDummyFolder(path: string) {
   const filesMap = {
     // Normal files in a hidden folder
     [join('.hidden', 'a.txt')]: 'a',
@@ -25,15 +23,15 @@ function createDummyFolder(path) {
     // A hidden files in a normal folder
     [join('folder', '.j')]: 'j'
   };
-  return Promise.map(Object.keys(filesMap), key => fs.writeFile(join(path, key), filesMap[key]));
+  return BlueBirdPromise.map(Object.keys(filesMap), key => fs.writeFile(join(path, key), filesMap[key]));
 }
 
-function createAnotherDummyFolder(path) {
+function createAnotherDummyFolder(path: string) {
   const filesMap = {
     [join('folder', '.txt')]: 'txt',
     [join('folder', '.js')]: 'js'
   };
-  return Promise.map(Object.keys(filesMap), key => fs.writeFile(join(path, key), filesMap[key]));
+  return BlueBirdPromise.map(Object.keys(filesMap), key => fs.writeFile(join(path, key), filesMap[key]));
 }
 
 describe('fs', () => {
@@ -50,6 +48,7 @@ describe('fs', () => {
 
   it('exists() - path is required', async () => {
     try {
+      // @ts-expect-error
       await fs.exists();
       should.fail();
     } catch (err) {
@@ -64,6 +63,7 @@ describe('fs', () => {
 
   it('existsSync() - path is required', () => {
     try {
+      // @ts-expect-error
       fs.existsSync();
       should.fail();
     } catch (err) {
@@ -88,6 +88,7 @@ describe('fs', () => {
 
   it('mkdirs() - path is required', async () => {
     try {
+      // @ts-expect-error
       await fs.mkdirs();
       should.fail();
     } catch (err) {
@@ -108,6 +109,7 @@ describe('fs', () => {
 
   it('mkdirsSync() - path is required', () => {
     try {
+      // @ts-expect-error
       fs.mkdirsSync();
       should.fail();
     } catch (err) {
@@ -129,6 +131,7 @@ describe('fs', () => {
 
   it('writeFile() - path is required', async () => {
     try {
+      // @ts-expect-error
       await fs.writeFile();
       should.fail();
     } catch (err) {
@@ -150,6 +153,7 @@ describe('fs', () => {
 
   it('writeFileSync() - path is required', () => {
     try {
+      // @ts-expect-error
       fs.writeFileSync();
       should.fail();
     } catch (err) {
@@ -174,6 +178,7 @@ describe('fs', () => {
 
   it('appendFile() - path is required', async () => {
     try {
+      // @ts-expect-error
       await fs.appendFile();
       should.fail();
     } catch (err) {
@@ -197,6 +202,7 @@ describe('fs', () => {
 
   it('appendFileSync() - path is required', () => {
     try {
+      // @ts-expect-error
       fs.appendFileSync();
       should.fail();
     } catch (err) {
@@ -215,7 +221,7 @@ describe('fs', () => {
     const result = await fs.readFile(dest);
     result.should.eql(body);
 
-    await Promise.all([
+    await BlueBirdPromise.all([
       fs.unlink(src),
       fs.rmdir(join(tmpDir, 'a'))
     ]);
@@ -223,6 +229,7 @@ describe('fs', () => {
 
   it('copyFile() - src is required', async () => {
     try {
+      // @ts-expect-error
       await fs.copyFile();
       should.fail();
     } catch (err) {
@@ -232,6 +239,7 @@ describe('fs', () => {
 
   it('copyFile() - dest is required', async () => {
     try {
+      // @ts-expect-error
       await fs.copyFile('123');
       should.fail();
     } catch (err) {
@@ -254,18 +262,19 @@ describe('fs', () => {
     const files = await fs.copyDir(src, dest);
     files.should.eql(filenames);
 
-    const result = [];
+    const result: string[] = [];
     for (const file of files) {
-      const output = await fs.readFile(join(dest, file));
+      const output = await fs.readFile(join(dest, file)) as string;
       result.push(output);
     }
     result.should.eql(['e', 'f', 'h', 'i']);
 
-    await Promise.all([fs.rmdir(src), fs.rmdir(dest)]);
+    await BlueBirdPromise.all([fs.rmdir(src), fs.rmdir(dest)]);
   });
 
   it('copyDir() - src is required', async () => {
     try {
+      // @ts-expect-error
       await fs.copyDir();
       should.fail();
     } catch (err) {
@@ -275,6 +284,7 @@ describe('fs', () => {
 
   it('copyDir() - dest is required', async () => {
     try {
+      // @ts-expect-error
       await fs.copyDir('123');
       should.fail();
     } catch (err) {
@@ -302,14 +312,14 @@ describe('fs', () => {
     const files = await fs.copyDir(src, dest, { ignoreHidden: false });
     files.should.have.members(filenames);
 
-    const result = [];
+    const result: string[] = [];
     for (const file of files) {
-      const output = await fs.readFile(join(dest, file));
+      const output = await fs.readFile(join(dest, file)) as string;
       result.push(output);
     }
     result.should.have.members(['a', 'b', 'd', 'e', 'f', 'g', 'h', 'i', 'j']);
 
-    await Promise.all([fs.rmdir(src), fs.rmdir(dest)]);
+    await BlueBirdPromise.all([fs.rmdir(src), fs.rmdir(dest)]);
   });
 
   it('copyDir() - ignorePattern', async () => {
@@ -322,14 +332,14 @@ describe('fs', () => {
     const files = await fs.copyDir(src, dest, { ignorePattern: /\.js/ });
     files.should.eql(filenames);
 
-    const result = [];
+    const result: string[] = [];
     for (const file of files) {
-      const output = await fs.readFile(join(dest, file));
+      const output = await fs.readFile(join(dest, file)) as string;
       result.push(output);
     }
     result.should.eql(['e', 'h']);
 
-    await Promise.all([fs.rmdir(src), fs.rmdir(dest)]);
+    await BlueBirdPromise.all([fs.rmdir(src), fs.rmdir(dest)]);
   });
 
   it('listDir()', async () => {
@@ -350,6 +360,7 @@ describe('fs', () => {
 
   it('listDir() - path is required', async () => {
     try {
+      // @ts-expect-error
       await fs.listDir();
       should.fail();
     } catch (err) {
@@ -408,6 +419,7 @@ describe('fs', () => {
 
   it('listDirSync() - path is required', () => {
     try {
+      // @ts-expect-error
       fs.listDirSync();
       should.fail();
     } catch (err) {
@@ -460,6 +472,7 @@ describe('fs', () => {
 
   it('readFile() - path is required', async () => {
     try {
+      // @ts-expect-error
       await fs.readFile();
       should.fail();
     } catch (err) {
@@ -514,6 +527,7 @@ describe('fs', () => {
 
   it('readFileSync() - path is required', () => {
     try {
+      // @ts-expect-error
       fs.readFileSync();
       should.fail();
     } catch (err) {
@@ -622,6 +636,7 @@ describe('fs', () => {
 
   it('emptyDir() - path is required', async () => {
     try {
+      // @ts-expect-error
       await fs.emptyDir();
       should.fail();
     } catch (err) {
@@ -747,6 +762,7 @@ describe('fs', () => {
 
   it('emptyDirSync() - path is required', () => {
     try {
+      // @ts-expect-error
       fs.emptyDirSync();
       should.fail();
     } catch (err) {
@@ -848,6 +864,7 @@ describe('fs', () => {
 
   it('rmdir() - path is required', async () => {
     try {
+      // @ts-expect-error
       await fs.rmdir();
       should.fail();
     } catch (err) {
@@ -866,6 +883,7 @@ describe('fs', () => {
 
   it('rmdirSync() - path is required', () => {
     try {
+      // @ts-expect-error
       fs.rmdirSync();
       should.fail();
     } catch (err) {
@@ -876,12 +894,12 @@ describe('fs', () => {
   it('watch()', async () => {
     const target = join(tmpDir, 'test.txt');
 
-    const testerWrap = _watcher => new Promise((resolve, reject) => {
+    const testerWrap = (_watcher: FSWatcher) => new BlueBirdPromise<string>((resolve, reject) => {
       _watcher.on('add', resolve).on('error', reject);
     });
 
     const watcher = await fs.watch(tmpDir);
-    const result = await Promise.all([
+    const result = await BlueBirdPromise.all([
       testerWrap(watcher),
       fs.writeFile(target, 'test')
     ]);
@@ -895,6 +913,7 @@ describe('fs', () => {
 
   it('watch() - path is required', async () => {
     try {
+      // @ts-expect-error
       await fs.watch();
       should.fail();
     } catch (err) {
@@ -906,7 +925,7 @@ describe('fs', () => {
     const target = join(tmpDir, 'test');
     const filenames = ['foo.txt', 'foo-1.txt', 'foo-2.md', 'bar.txt'];
 
-    await Promise.map(filenames, path => fs.writeFile(join(target, path)));
+    await BlueBirdPromise.map(filenames, path => fs.writeFile(join(target, path)));
     const result = await fs.ensurePath(join(target, 'foo.txt'));
     result.should.eql(join(target, 'foo-2.txt'));
 
@@ -921,6 +940,7 @@ describe('fs', () => {
 
   it('ensurePath() - path is required', async () => {
     try {
+      // @ts-expect-error
       await fs.ensurePath();
       should.fail();
     } catch (err) {
@@ -932,7 +952,7 @@ describe('fs', () => {
     const target = join(tmpDir, 'test');
     const filenames = ['foo.txt', 'foo-1.txt', 'foo-2.md', 'bar.txt'];
 
-    await Promise.map(filenames, path => fs.writeFile(join(target, path)));
+    await BlueBirdPromise.map(filenames, path => fs.writeFile(join(target, path)));
     const path = fs.ensurePathSync(join(target, 'foo.txt'));
     path.should.eql(join(target, 'foo-2.txt'));
 
@@ -948,6 +968,7 @@ describe('fs', () => {
 
   it('ensurePathSync() - path is required', () => {
     try {
+      // @ts-expect-error
       fs.ensurePathSync();
       should.fail();
     } catch (err) {
