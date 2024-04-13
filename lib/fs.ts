@@ -5,6 +5,7 @@ import { dirname, join, extname, basename } from 'path';
 import { escapeRegExp } from 'hexo-util';
 
 import fs from 'graceful-fs';
+import type { Stream } from 'stream';
 
 const fsPromises = fs.promises;
 
@@ -51,7 +52,7 @@ function checkParent(path: string) {
 
 export function writeFile(
   path: string,
-  data?: any,
+  data?: string | NodeJS.ArrayBufferView | Iterable<string | NodeJS.ArrayBufferView> | AsyncIterable<string | NodeJS.ArrayBufferView> | Stream,
   options?: WriteFileOptions
 ) {
   if (!path) throw new TypeError('path is required!');
@@ -63,7 +64,7 @@ export function writeFile(
 }
 
 
-export function writeFileSync(path: string, data: any, options?: WriteFileOptions) {
+export function writeFileSync(path: string, data: string | NodeJS.ArrayBufferView, options?: WriteFileOptions) {
   if (!path) throw new TypeError('path is required!');
 
   fs.mkdirSync(dirname(path), { recursive: true });
@@ -72,7 +73,7 @@ export function writeFileSync(path: string, data: any, options?: WriteFileOption
 
 export function appendFile(
   path: string,
-  data: any,
+  data: string | Uint8Array,
   options?: WriteFileOptions) {
   if (!path) throw new TypeError('path is required!');
 
@@ -80,7 +81,7 @@ export function appendFile(
     .then(() => fsPromises.appendFile(path, data, options));
 }
 
-export function appendFileSync(path: string, data: any, options?: WriteFileOptions) {
+export function appendFileSync(path: string, data: string | Uint8Array, options?: WriteFileOptions) {
   if (!path) throw new TypeError('path is required!');
 
   fs.mkdirSync(dirname(path), { recursive: true });
@@ -110,7 +111,7 @@ function ignoreFilesRegex(regex?: RegExp) {
   return ({ name }) => !regex.test(name);
 }
 
-function ignoreExcludeFiles(arr: any[], parent: string) {
+function ignoreExcludeFiles(arr: string[], parent: string) {
   if (!arr || !arr.length) return trueFn;
 
   const set = new Set(arr);
@@ -141,7 +142,7 @@ function _readAndFilterDirSync(path: string, options?: ReadDirOptions) {
 }
 
 async function _copyDirWalker(
-  src: string, dest: string, results: any[], parent: string,
+  src: string, dest: string, results: string[], parent: string,
   options: ReadDirOptions) {
   return BlueBirdPromise.map(_readAndFilterDir(src, options), item => {
     const childSrc = join(src, item.name);
@@ -161,7 +162,7 @@ export function copyDir(
   if (!src) throw new TypeError('src is required!');
   if (!dest) throw new TypeError('dest is required!');
 
-  const results = [];
+  const results: string[] = [];
 
   return checkParent(dest)
     .then(() => _copyDirWalker(src, dest, results, '', options))
@@ -169,7 +170,7 @@ export function copyDir(
 }
 
 async function _listDirWalker(
-  path: string, results: any[], parent?: string, options?: ReadDirOptions) {
+  path: string, results: string[], parent?: string, options?: ReadDirOptions) {
   const promises = [];
 
   for (const item of await _readAndFilterDir(path, options)) {
@@ -190,14 +191,14 @@ export function listDir(
   path: string, options: ReadDirOptions = {}) {
   if (!path) throw new TypeError('path is required!');
 
-  const results = [];
+  const results: string[] = [];
 
   return BlueBirdPromise.resolve(_listDirWalker(path, results, '', options))
     .return(results);
 }
 
 function _listDirSyncWalker(
-  path: string, results: any[], parent: string, options: ReadDirOptions) {
+  path: string, results: string[], parent: string, options: ReadDirOptions) {
   for (const item of _readAndFilterDirSync(path, options)) {
     const currentPath = join(parent, item.name);
 
@@ -211,7 +212,7 @@ function _listDirSyncWalker(
 
 export function listDirSync(path: string, options: ReadDirOptions = {}) {
   if (!path) throw new TypeError('path is required!');
-  const results = [];
+  const results: string[] = [];
 
   _listDirSyncWalker(path, results, '', options);
 
@@ -226,7 +227,7 @@ export function escapeBOM(str: string) {
   return str.charCodeAt(0) === 0xFEFF ? str.substring(1) : str;
 }
 
-export function escapeFileContent(content) {
+export function escapeFileContent(content: string) {
   return escapeBOM(escapeEOL(content));
 }
 
@@ -239,12 +240,14 @@ async function _readFile(path: string, options: ReadFileOptions | null = {}) {
   const content = await fsPromises.readFile(path, options);
 
   if (options.escape == null || options.escape) {
-    return escapeFileContent(content);
+    return escapeFileContent(content as string);
   }
 
   return content;
 }
 
+export function readFile(path: string): BlueBirdPromise<string>;
+export function readFile(path: string, options?: ReadFileOptions | null): BlueBirdPromise<string | Buffer>;
 export function readFile(
   path: string, options?: ReadFileOptions | null) {
   if (!path) throw new TypeError('path is required!');
@@ -252,6 +255,8 @@ export function readFile(
   return BlueBirdPromise.resolve(_readFile(path, options));
 }
 
+export function readFileSync(path: string): string;
+export function readFileSync(path: string, options?: ReadFileOptions): string | Buffer;
 export function readFileSync(path: string, options: ReadFileOptions = {}) {
   if (!path) throw new TypeError('path is required!');
 
@@ -261,7 +266,7 @@ export function readFileSync(path: string, options: ReadFileOptions = {}) {
   const content = fs.readFileSync(path, options);
 
   if (options.escape == null || options.escape) {
-    return escapeFileContent(content);
+    return escapeFileContent(content as string);
   }
 
   return content;
@@ -269,10 +274,10 @@ export function readFileSync(path: string, options: ReadFileOptions = {}) {
 
 async function _emptyDir(
   path: string, parent?: string,
-  options?: ReadDirOptions & { exclude?: any[] }) {
+  options?: ReadDirOptions & { exclude?: string[] }) {
   const entries = (await _readAndFilterDir(path, options)).filter(
     ignoreExcludeFiles(options.exclude, parent));
-  const results = [];
+  const results: string[] = [];
 
   await BlueBirdPromise.map(entries, (item: Dirent) => {
     const fullPath = join(path, item.name);
@@ -294,19 +299,19 @@ async function _emptyDir(
 }
 
 export function emptyDir(
-  path: string, options: ReadDirOptions & { exclude?: any[] } = {}) {
+  path: string, options: ReadDirOptions & { exclude?: string[] } = {}) {
   if (!path) throw new TypeError('path is required!');
 
   return BlueBirdPromise.resolve(_emptyDir(path, '', options));
 }
 
 function _emptyDirSync(
-  path: string, options: ReadDirOptions & { exclude?: any[] },
+  path: string, options: ReadDirOptions & { exclude?: string[] },
   parent?: string) {
   const entries = _readAndFilterDirSync(path, options)
     .filter(ignoreExcludeFiles(options.exclude, parent));
 
-  const results = [];
+  const results: string[] = [];
 
   for (const item of entries) {
     const childPath = join(path, item.name);
@@ -330,7 +335,7 @@ function _emptyDirSync(
 }
 
 export function emptyDirSync(
-  path: string, options: ReadDirOptions & { exclude?: any[] } = {}) {
+  path: string, options: ReadDirOptions & { exclude?: string[] } = {}) {
   if (!path) throw new TypeError('path is required!');
 
   return _emptyDirSync(path, options, '');
