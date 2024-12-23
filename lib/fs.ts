@@ -1,5 +1,5 @@
 import type { Dirent, WriteFileOptions } from 'fs';
-import chokidar, { WatchOptions } from 'chokidar';
+import chokidar, { ChokidarOptions } from 'chokidar';
 import BlueBirdPromise from 'bluebird';
 import { dirname, join, extname, basename } from 'path';
 import { escapeRegExp } from 'hexo-util';
@@ -382,7 +382,7 @@ export function rmdirSync(path: string) {
 }
 
 export function watch(
-  path: string | ReadonlyArray<string>, options?: WatchOptions) {
+  path: string | Array<string>, options?: ChokidarOptions) {
   if (!path) throw new TypeError('path is required!');
 
   const watcher = chokidar.watch(path, options);
