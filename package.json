@@ -50,6 +50,6 @@
     "typescript": "^5.0.3"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   }
 }
