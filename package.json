@@ -32,7 +32,7 @@
     "bluebird": "^3.7.2",
     "chokidar": "^4.0.3",
     "graceful-fs": "^4.2.10",
-    "hexo-util": "^3.0.1"
+    "hexo-util": "^3.3.0"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.36",
@@ -44,12 +44,12 @@
     "chai": "^4.3.6",
     "eslint": "^8.23.0",
     "eslint-config-hexo": "^5.0.0",
-    "eslint-plugin-import": "^2.26.0",
-    "mocha": "^10.0.0",
+    "eslint-plugin-import": "^2.31.0",
+    "mocha": "^11.0.1",
     "ts-node": "^10.9.1",
-    "typescript": "^5.0.3"
+    "typescript": "^5.7.2"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   }
 }
