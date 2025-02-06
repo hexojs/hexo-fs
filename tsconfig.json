@@ -16,5 +16,9 @@
   ],
   "exclude": [
     "node_modules"
-  ]
+  ],
+  "ts-node": {
+    "transpileOnly": true,
+    "compilerOptions": { "types": ["node", "mocha", "chai"] }
+  }
 }

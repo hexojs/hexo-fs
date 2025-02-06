@@ -1,9 +1,7 @@
-import chai from 'chai';
 import { join, dirname } from 'path';
 import BlueBirdPromise from 'bluebird';
 import * as fs from '../lib/fs';
 import type { FSWatcher } from 'chokidar';
-const should = chai.should();
 
 function createDummyFolder(path: string) {
   const filesMap = {
