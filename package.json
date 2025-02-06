@@ -8,7 +8,7 @@
     "build": "tsc -b",
     "clean": "tsc -b --clean",
     "eslint": "eslint .",
-    "test": "mocha test/index.ts --require ts-node/register",
+    "test": "mocha test/index.ts",
     "test-cov": "c8 --reporter=lcovonly npm run test"
   },
   "files": [
