@@ -3,7 +3,16 @@
   "version": "5.0.0",
   "description": "File system module for Hexo.",
   "type": "module",
-  "main": "./dist/fs.js",
+  "main": "dist/cjs/fs.js",
+  "module": "dist/esm/fs.js",
+  "types": "./dist/esm/fs.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/fs.js",
+      "require": "./dist/cjs/fs.js",
+      "types": "./dist/esm/fs.d.ts"
+    }
+  },
   "scripts": {
     "prepublish ": "npm install && npm run clean && npm run build",
     "build-cjs": "tsc -p tsconfig.cjs.json",
@@ -18,7 +27,6 @@
   "files": [
     "dist/**"
   ],
-  "types": "./dist/fs.d.ts",
   "repository": "hexojs/hexo-fs",
   "homepage": "https://hexo.io/",
   "keywords": [
