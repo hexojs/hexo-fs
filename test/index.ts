@@ -1,9 +1,13 @@
-import chai from 'chai';
+import * as chai from 'chai';
 import { join, dirname } from 'path';
 import BlueBirdPromise from 'bluebird';
-import * as fs from '../lib/fs';
+import * as fs from '../lib/fs.js';
 import type { FSWatcher } from 'chokidar';
+import { fileURLToPath } from 'url';
 const should = chai.should();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 function createDummyFolder(path: string) {
   const filesMap = {
@@ -43,7 +47,7 @@ describe('fs', () => {
 
   it('exists()', async () => {
     const exist = await fs.exists(tmpDir);
-    exist.should.eql(true);
+    chai.expect(exist).to.eql(true);
   });
 
   it('exists() - path is required', async () => {
@@ -58,7 +62,7 @@ describe('fs', () => {
 
   it('existsSync()', () => {
     const exist = fs.existsSync(tmpDir);
-    exist.should.eql(true);
+    chai.expect(exist).to.eql(true);
   });
 
   it('existsSync() - path is required', () => {
@@ -73,7 +77,7 @@ describe('fs', () => {
 
   it('existsSync() - not exist', () => {
     const exist = fs.existsSync(join(__dirname, 'fs_tmp1'));
-    exist.should.eql(false);
+    chai.expect(exist).to.eql(false);
   });
 
   it('mkdirs()', async () => {
@@ -81,7 +85,7 @@ describe('fs', () => {
 
     await fs.mkdirs(target);
     const exist = await fs.exists(target);
-    exist.should.eql(true);
+    chai.expect(exist).to.eql(true);
 
     await fs.rmdir(join(tmpDir, 'a'));
   });
@@ -102,7 +106,7 @@ describe('fs', () => {
     fs.mkdirsSync(target);
 
     const exist = await fs.exists(target);
-    exist.should.eql(true);
+    chai.expect(exist).to.eql(true);
 
     await fs.rmdir(join(tmpDir, 'a'));
   });
@@ -124,7 +128,7 @@ describe('fs', () => {
     await fs.writeFile(target, body);
     const result = await fs.readFile(target);
 
-    result.should.eql(body);
+    chai.expect(result).to.eql(body);
 
     await fs.rmdir(join(tmpDir, 'a'));
   });
@@ -146,7 +150,7 @@ describe('fs', () => {
     fs.writeFileSync(target, body);
 
     const result = await fs.readFile(target);
-    result.should.eql(body);
+    chai.expect(result).to.eql(body);
 
     await fs.rmdir(join(tmpDir, 'a'));
   });
@@ -171,7 +175,7 @@ describe('fs', () => {
 
     const result = await fs.readFile(target);
 
-    result.should.eql(body + body2);
+    chai.expect(result).to.eql(body + body2);
 
     await fs.rmdir(join(tmpDir, 'a'));
   });
@@ -195,7 +199,7 @@ describe('fs', () => {
     fs.appendFileSync(target, body2);
 
     const result = await fs.readFile(target);
-    result.should.eql(body + body2);
+    chai.expect(result).to.eql(body + body2);
 
     await fs.rmdir(join(tmpDir, 'a'));
   });
@@ -219,7 +223,7 @@ describe('fs', () => {
     await fs.copyFile(src, dest);
 
     const result = await fs.readFile(dest);
-    result.should.eql(body);
+    chai.expect(result).to.eql(body);
 
     await BlueBirdPromise.all([
       fs.unlink(src),
@@ -260,14 +264,14 @@ describe('fs', () => {
 
     await createDummyFolder(src);
     const files = await fs.copyDir(src, dest);
-    files.should.eql(filenames);
+    chai.expect(files).to.eql(filenames);
 
     const result: string[] = [];
     for (const file of files) {
       const output = await fs.readFile(join(dest, file)) as string;
       result.push(output);
     }
-    result.should.eql(['e', 'f', 'h', 'i']);
+    chai.expect(result).to.eql(['e', 'f', 'h', 'i']);
 
     await BlueBirdPromise.all([fs.rmdir(src), fs.rmdir(dest)]);
   });
@@ -310,14 +314,14 @@ describe('fs', () => {
 
     await createDummyFolder(src);
     const files = await fs.copyDir(src, dest, { ignoreHidden: false });
-    files.should.have.members(filenames);
+    chai.expect(files).to.have.members(filenames);
 
     const result: string[] = [];
     for (const file of files) {
       const output = await fs.readFile(join(dest, file)) as string;
       result.push(output);
     }
-    result.should.have.members(['a', 'b', 'd', 'e', 'f', 'g', 'h', 'i', 'j']);
+    chai.expect(result).to.have.members(['a', 'b', 'd', 'e', 'f', 'g', 'h', 'i', 'j']);
 
     await BlueBirdPromise.all([fs.rmdir(src), fs.rmdir(dest)]);
   });
@@ -330,14 +334,14 @@ describe('fs', () => {
 
     await createDummyFolder(src);
     const files = await fs.copyDir(src, dest, { ignorePattern: /\.js/ });
-    files.should.eql(filenames);
+    chai.expect(files).to.eql(filenames);
 
     const result: string[] = [];
     for (const file of files) {
       const output = await fs.readFile(join(dest, file)) as string;
       result.push(output);
     }
-    result.should.eql(['e', 'h']);
+    chai.expect(result).to.eql(['e', 'h']);
 
     await BlueBirdPromise.all([fs.rmdir(src), fs.rmdir(dest)]);
   });
@@ -353,7 +357,7 @@ describe('fs', () => {
 
     await createDummyFolder(target);
     const dir = await fs.listDir(target);
-    dir.should.eql(expected);
+    chai.expect(dir).to.eql(expected);
 
     await fs.rmdir(target);
   });
@@ -385,7 +389,7 @@ describe('fs', () => {
 
     await createDummyFolder(target);
     const dir = await fs.listDir(target, { ignoreHidden: false });
-    dir.should.have.members(filenames);
+    chai.expect(dir).to.have.members(filenames);
 
     await fs.rmdir(target);
   });
@@ -395,7 +399,7 @@ describe('fs', () => {
 
     await createDummyFolder(target);
     const dir = await fs.listDir(target, { ignorePattern: /\.js/ });
-    dir.should.eql(['e.txt', join('folder', 'h.txt')]);
+    chai.expect(dir).to.eql(['e.txt', join('folder', 'h.txt')]);
 
     await fs.rmdir(target);
   });
@@ -412,7 +416,7 @@ describe('fs', () => {
 
     await createDummyFolder(target);
     const files = fs.listDirSync(target);
-    files.should.eql(filenames);
+    chai.expect(files).to.eql(filenames);
 
     await fs.rmdir(target);
   });
@@ -444,7 +448,7 @@ describe('fs', () => {
 
     await createDummyFolder(target);
     const files = fs.listDirSync(target, { ignoreHidden: false });
-    files.should.have.members(filenames);
+    chai.expect(files).to.have.members(filenames);
 
     await fs.rmdir(target);
   });
@@ -454,7 +458,7 @@ describe('fs', () => {
 
     await createDummyFolder(target);
     const files = fs.listDirSync(target, { ignorePattern: /\.js/ });
-    files.should.eql(['e.txt', join('folder', 'h.txt')]);
+    chai.expect(files).to.eql(['e.txt', join('folder', 'h.txt')]);
 
     await fs.rmdir(target);
   });
@@ -465,7 +469,7 @@ describe('fs', () => {
 
     await fs.writeFile(target, body);
     const result = await fs.readFile(target);
-    result.should.eql(body);
+    chai.expect(result).to.eql(body);
 
     await fs.unlink(target);
   });
@@ -487,7 +491,7 @@ describe('fs', () => {
     await fs.writeFile(target, body);
     const result = await fs.readFile(target);
 
-    result.should.eql('foo');
+    chai.expect(result).to.eql('foo');
 
     await fs.unlink(target);
   });
@@ -498,7 +502,7 @@ describe('fs', () => {
 
     await fs.writeFile(target, body);
     const result = await fs.readFile(target);
-    result.should.eql('foo\nbar');
+    chai.expect(result).to.eql('foo\nbar');
 
     await fs.unlink(target);
   });
@@ -509,7 +513,7 @@ describe('fs', () => {
 
     await fs.writeFile(target, body);
     const result = await fs.readFile(target, { escape: '' });
-    result.should.eql('foo\r\nbar');
+    chai.expect(result).to.eql('foo\r\nbar');
 
     await fs.unlink(target);
   });
@@ -520,7 +524,7 @@ describe('fs', () => {
 
     await fs.writeFile(target, body);
     const result = fs.readFileSync(target);
-    result.should.eql(body);
+    chai.expect(result).to.eql(body);
 
     await fs.unlink(target);
   });
@@ -541,7 +545,7 @@ describe('fs', () => {
 
     await fs.writeFile(target, body);
     const result = fs.readFileSync(target);
-    result.should.eql('foo');
+    chai.expect(result).to.eql('foo');
 
     await fs.unlink(target);
   });
@@ -552,7 +556,7 @@ describe('fs', () => {
 
     await fs.writeFile(target, body);
     const result = fs.readFileSync(target);
-    result.should.eql('foo\nbar');
+    chai.expect(result).to.eql('foo\nbar');
 
     await fs.unlink(target);
   });
@@ -563,7 +567,7 @@ describe('fs', () => {
 
     await fs.writeFile(target, body);
     const result = fs.readFileSync(target, { escape: '' });
-    result.should.eql('foo\r\nbar');
+    chai.expect(result).to.eql('foo\r\nbar');
 
     await fs.unlink(target);
   });
@@ -573,11 +577,11 @@ describe('fs', () => {
 
     await fs.writeFile(target, '');
     let exist = await fs.exists(target);
-    exist.should.eql(true);
+    chai.expect(exist).to.eql(true);
 
     await fs.unlink(target);
     exist = await fs.exists(target);
-    exist.should.eql(false);
+    chai.expect(exist).to.eql(false);
   });
 
   it('emptyDir()', async () => {
@@ -597,7 +601,7 @@ describe('fs', () => {
 
     await createDummyFolder(target);
     const files = await fs.emptyDir(target);
-    files.should.eql([
+    chai.expect(files).to.eql([
       'e.txt',
       'f.js',
       join('folder', 'h.txt'),
@@ -607,7 +611,7 @@ describe('fs', () => {
     const paths = Object.keys(checkExistsMap);
     for (const path of paths) {
       const exist = await fs.exists(join(target, path));
-      exist.should.eql(checkExistsMap[path]);
+      chai.expect(exist).to.eql(checkExistsMap[path]);
     }
 
     await fs.rmdir(target);
@@ -623,12 +627,12 @@ describe('fs', () => {
 
     await createAnotherDummyFolder(target);
     const files = await fs.emptyDir(target);
-    files.should.eql([]);
+    chai.expect(files).to.eql([]);
 
     const paths = Object.keys(checkExistsMap);
     for (const path of paths) {
       const exist = await fs.exists(join(target, path));
-      exist.should.eql(checkExistsMap[path]);
+      chai.expect(exist).to.eql(checkExistsMap[path]);
     }
 
     await fs.rmdir(target);
@@ -661,11 +665,11 @@ describe('fs', () => {
 
     await createDummyFolder(target);
     const files = await fs.emptyDir(target, { ignoreHidden: false });
-    files.should.have.members(filenames);
+    chai.expect(files).to.have.members(filenames);
 
     for (const file of files) {
       const exist = await fs.exists(join(target, file));
-      exist.should.eql(false);
+      chai.expect(exist).to.eql(false);
     }
 
     await fs.rmdir(target);
@@ -688,12 +692,12 @@ describe('fs', () => {
 
     await createDummyFolder(target);
     const files = await fs.emptyDir(target, { ignorePattern: /\.js/ });
-    files.should.eql(['e.txt', join('folder', 'h.txt')]);
+    chai.expect(files).to.eql(['e.txt', join('folder', 'h.txt')]);
 
     const paths = Object.keys(checkExistsMap);
     for (const path of paths) {
       const exist = await fs.exists(join(target, path));
-      exist.should.eql(checkExistsMap[path]);
+      chai.expect(exist).to.eql(checkExistsMap[path]);
     }
 
     await fs.rmdir(target);
@@ -716,12 +720,12 @@ describe('fs', () => {
 
     await createDummyFolder(target);
     const files = await fs.emptyDir(target, { exclude: ['e.txt', join('folder', 'i.js')] });
-    files.should.eql(['f.js', join('folder', 'h.txt')]);
+    chai.expect(files).to.eql(['f.js', join('folder', 'h.txt')]);
 
     const paths = Object.keys(checkExistsMap);
     for (const path of paths) {
       const exist = await fs.exists(join(target, path));
-      exist.should.eql(checkExistsMap[path]);
+      chai.expect(exist).to.eql(checkExistsMap[path]);
     }
 
     await fs.rmdir(target);
@@ -744,7 +748,7 @@ describe('fs', () => {
 
     await createDummyFolder(target);
     const files = fs.emptyDirSync(target);
-    files.should.eql([
+    chai.expect(files).to.eql([
       'e.txt',
       'f.js',
       join('folder', 'h.txt'),
@@ -754,7 +758,7 @@ describe('fs', () => {
     const paths = Object.keys(checkExistsMap);
     for (const path of paths) {
       const exist = await fs.exists(join(target, path));
-      exist.should.eql(checkExistsMap[path]);
+      chai.expect(exist).to.eql(checkExistsMap[path]);
     }
 
     await fs.rmdir(target);
@@ -787,11 +791,11 @@ describe('fs', () => {
 
     await createDummyFolder(target);
     const files = fs.emptyDirSync(target, { ignoreHidden: false });
-    files.should.have.members(filenames);
+    chai.expect(files).to.have.members(filenames);
 
     for (const file of files) {
       const exist = await fs.exists(join(target, file));
-      exist.should.eql(false);
+      chai.expect(exist).to.eql(false);
     }
 
     await fs.rmdir(target);
@@ -814,12 +818,12 @@ describe('fs', () => {
 
     await createDummyFolder(target);
     const files = fs.emptyDirSync(target, { ignorePattern: /\.js/ });
-    files.should.eql(['e.txt', join('folder', 'h.txt')]);
+    chai.expect(files).to.eql(['e.txt', join('folder', 'h.txt')]);
 
     const paths = Object.keys(checkExistsMap);
     for (const path of paths) {
       const exist = await fs.exists(join(target, path));
-      exist.should.eql(checkExistsMap[path]);
+      chai.expect(exist).to.eql(checkExistsMap[path]);
     }
 
     await fs.rmdir(target);
@@ -842,12 +846,12 @@ describe('fs', () => {
 
     await createDummyFolder(target);
     const files = fs.emptyDirSync(target, { exclude: ['e.txt', join('folder', 'i.js')] });
-    files.should.eql(['f.js', join('folder', 'h.txt')]);
+    chai.expect(files).to.eql(['f.js', join('folder', 'h.txt')]);
 
     const paths = Object.keys(checkExistsMap);
     for (const path of paths) {
       const exist = await fs.exists(join(target, path));
-      exist.should.eql(checkExistsMap[path]);
+      chai.expect(exist).to.eql(checkExistsMap[path]);
     }
 
     await fs.rmdir(target);
@@ -859,7 +863,7 @@ describe('fs', () => {
     await createDummyFolder(target);
     await fs.rmdir(target);
     const exist = await fs.exists(target);
-    exist.should.eql(false);
+    chai.expect(exist).to.eql(false);
   });
 
   it('rmdir() - path is required', async () => {
@@ -878,7 +882,7 @@ describe('fs', () => {
     await createDummyFolder(target);
     fs.rmdirSync(target);
     const exist = await fs.exists(target);
-    exist.should.eql(false);
+    chai.expect(exist).to.eql(false);
   });
 
   it('rmdirSync() - path is required', () => {
@@ -903,7 +907,7 @@ describe('fs', () => {
       testerWrap(watcher),
       fs.writeFile(target, 'test')
     ]);
-    result[0].should.eql(target);
+    chai.expect(result[0]).to.eql(target);
 
     if (watcher) {
       watcher.close();
@@ -927,7 +931,7 @@ describe('fs', () => {
 
     await BlueBirdPromise.map(filenames, path => fs.writeFile(join(target, path)));
     const result = await fs.ensurePath(join(target, 'foo.txt'));
-    result.should.eql(join(target, 'foo-2.txt'));
+    chai.expect(result).to.eql(join(target, 'foo-2.txt'));
 
     await fs.rmdir(target);
   });
@@ -935,7 +939,7 @@ describe('fs', () => {
   it('ensurePath() - file not exist', async () => {
     const target = join(tmpDir, 'foo.txt');
     const result = await fs.ensurePath(target);
-    result.should.eql(target);
+    chai.expect(result).to.eql(target);
   });
 
   it('ensurePath() - path is required', async () => {
@@ -954,7 +958,7 @@ describe('fs', () => {
 
     await BlueBirdPromise.map(filenames, path => fs.writeFile(join(target, path)));
     const path = fs.ensurePathSync(join(target, 'foo.txt'));
-    path.should.eql(join(target, 'foo-2.txt'));
+    chai.expect(path).to.eql(join(target, 'foo-2.txt'));
 
     await fs.rmdir(target);
   });
@@ -963,7 +967,7 @@ describe('fs', () => {
     const target = join(tmpDir, 'foo.txt');
     const path = fs.ensurePathSync(target);
 
-    path.should.eql(target);
+    chai.expect(path).to.eql(target);
   });
 
   it('ensurePathSync() - path is required', () => {
@@ -977,14 +981,14 @@ describe('fs', () => {
   });
 
   it('ensureWriteStream()', async () => {
-    const { promisify } = require('util');
-    const streamFn = require('stream');
-    const finished = promisify(streamFn.finished);
+    const { promisify } = await import('util');
+    const { finished: finishedFn } = await import('stream');
+    const finished = promisify(finishedFn);
 
     const target = join(tmpDir, 'foo', 'bar.txt');
 
     const stream = await fs.ensureWriteStream(target);
-    stream.path.should.eql(target);
+    chai.expect(stream.path).to.eql(target);
 
     stream.end();
     await finished(stream);
@@ -996,7 +1000,7 @@ describe('fs', () => {
     const target = join(tmpDir, 'foo', 'bar.txt');
     const stream = fs.ensureWriteStreamSync(target);
 
-    stream.path.should.eql(target);
+    chai.expect(stream.path).to.eql(target);
 
     stream.on('error', callback);
     stream.on('close', () => {

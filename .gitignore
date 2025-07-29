@@ -6,3 +6,5 @@ tmp/
 coverage/
 package-lock.json
 dist
+.vscode/
+yarn.lock
