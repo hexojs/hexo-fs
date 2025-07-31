@@ -8,3 +8,5 @@ package-lock.json
 dist
 .vscode/
 yarn.lock
+*.ignore
+*.patch
