@@ -13,10 +13,13 @@ const rEOL = /\r\n/g;
 
 export function exists(path: string) {
   if (!path) throw new TypeError('path is required!');
-  const promise = fsPromises.access(path).then(() => true, error => {
-    if (error.code !== 'ENOENT') throw error;
-    return false;
-  });
+  const promise = fsPromises.access(path).then(
+    () => true,
+    (error) => {
+      if (error.code !== 'ENOENT') throw error;
+      return false;
+    }
+  );
 
   return BlueBirdPromise.resolve(promise);
 }
@@ -52,17 +55,20 @@ function checkParent(path: string) {
 
 export function writeFile(
   path: string,
-  data?: string | NodeJS.ArrayBufferView | Iterable<string | NodeJS.ArrayBufferView> | AsyncIterable<string | NodeJS.ArrayBufferView> | Stream,
+  data?:
+    | string
+    | NodeJS.ArrayBufferView
+    | Iterable<string | NodeJS.ArrayBufferView>
+    | AsyncIterable<string | NodeJS.ArrayBufferView>
+    | Stream,
   options?: WriteFileOptions
 ) {
   if (!path) throw new TypeError('path is required!');
 
   if (!data) data = '';
 
-  return checkParent(path)
-    .then(() => fsPromises.writeFile(path, data, options));
+  return checkParent(path).then(() => fsPromises.writeFile(path, data, options));
 }
-
 
 export function writeFileSync(path: string, data: string | NodeJS.ArrayBufferView, options?: WriteFileOptions) {
   if (!path) throw new TypeError('path is required!');
@@ -71,14 +77,10 @@ export function writeFileSync(path: string, data: string | NodeJS.ArrayBufferVie
   fs.writeFileSync(path, data, options);
 }
 
-export function appendFile(
-  path: string,
-  data: string | Uint8Array,
-  options?: WriteFileOptions) {
+export function appendFile(path: string, data: string | Uint8Array, options?: WriteFileOptions) {
   if (!path) throw new TypeError('path is required!');
 
-  return checkParent(path)
-    .then(() => fsPromises.appendFile(path, data, options));
+  return checkParent(path).then(() => fsPromises.appendFile(path, data, options));
 }
 
 export function appendFileSync(path: string, data: string | Uint8Array, options?: WriteFileOptions) {
@@ -88,13 +90,11 @@ export function appendFileSync(path: string, data: string | Uint8Array, options?
   fs.appendFileSync(path, data, options);
 }
 
-export function copyFile(
-  src: string, dest: string, flags?: number) {
+export function copyFile(src: string, dest: string, flags?: number) {
   if (!src) throw new TypeError('src is required!');
   if (!dest) throw new TypeError('dest is required!');
 
-  return checkParent(dest)
-    .then(() => fsPromises.copyFile(src, dest, flags));
+  return checkParent(dest).then(() => fsPromises.copyFile(src, dest, flags));
 }
 
 const trueFn = () => true as const;
@@ -120,14 +120,13 @@ function ignoreExcludeFiles(arr: string[], parent: string) {
 }
 
 export type ReadDirOptions = {
-  encoding?: BufferEncoding | null
-  withFileTypes?: false
-  ignoreHidden?: boolean
-  ignorePattern?: RegExp
-}
+  encoding?: BufferEncoding | null;
+  withFileTypes?: false;
+  ignoreHidden?: boolean;
+  ignorePattern?: RegExp;
+};
 
-async function _readAndFilterDir(
-  path: string, options: ReadDirOptions = {}): Promise<Dirent[]> {
+async function _readAndFilterDir(path: string, options: ReadDirOptions = {}): Promise<Dirent[]> {
   const { ignoreHidden = true, ignorePattern } = options;
   return (await fsPromises.readdir(path, { ...options, withFileTypes: true }))
     .filter(ignoreHiddenFiles(ignoreHidden))
@@ -136,15 +135,14 @@ async function _readAndFilterDir(
 
 function _readAndFilterDirSync(path: string, options?: ReadDirOptions) {
   const { ignoreHidden = true, ignorePattern } = options;
-  return fs.readdirSync(path, { ...options, withFileTypes: true })
+  return fs
+    .readdirSync(path, { ...options, withFileTypes: true })
     .filter(ignoreHiddenFiles(ignoreHidden))
     .filter(ignoreFilesRegex(ignorePattern));
 }
 
-async function _copyDirWalker(
-  src: string, dest: string, results: string[], parent: string,
-  options: ReadDirOptions) {
-  return BlueBirdPromise.map(_readAndFilterDir(src, options), item => {
+async function _copyDirWalker(src: string, dest: string, results: string[], parent: string, options: ReadDirOptions) {
+  return BlueBirdPromise.map(_readAndFilterDir(src, options), (item) => {
     const childSrc = join(src, item.name);
     const childDest = join(dest, item.name);
     const currentPath = join(parent, item.name);
@@ -157,8 +155,7 @@ async function _copyDirWalker(
   });
 }
 
-export function copyDir(
-  src: string, dest: string, options: ReadDirOptions = {}) {
+export function copyDir(src: string, dest: string, options: ReadDirOptions = {}) {
   if (!src) throw new TypeError('src is required!');
   if (!dest) throw new TypeError('dest is required!');
 
@@ -169,16 +166,14 @@ export function copyDir(
     .return(results);
 }
 
-async function _listDirWalker(
-  path: string, results: string[], parent?: string, options?: ReadDirOptions) {
+async function _listDirWalker(path: string, results: string[], parent?: string, options?: ReadDirOptions) {
   const promises = [];
 
   for (const item of await _readAndFilterDir(path, options)) {
     const currentPath = join(parent, item.name);
 
     if (item.isDirectory()) {
-      promises.push(
-        _listDirWalker(join(path, item.name), results, currentPath, options));
+      promises.push(_listDirWalker(join(path, item.name), results, currentPath, options));
     } else {
       results.push(currentPath);
     }
@@ -187,18 +182,15 @@ async function _listDirWalker(
   await BlueBirdPromise.all(promises);
 }
 
-export function listDir(
-  path: string, options: ReadDirOptions = {}) {
+export function listDir(path: string, options: ReadDirOptions = {}) {
   if (!path) throw new TypeError('path is required!');
 
   const results: string[] = [];
 
-  return BlueBirdPromise.resolve(_listDirWalker(path, results, '', options))
-    .return(results);
+  return BlueBirdPromise.resolve(_listDirWalker(path, results, '', options)).return(results);
 }
 
-function _listDirSyncWalker(
-  path: string, results: string[], parent: string, options: ReadDirOptions) {
+function _listDirSyncWalker(path: string, results: string[], parent: string, options: ReadDirOptions) {
   for (const item of _readAndFilterDirSync(path, options)) {
     const currentPath = join(parent, item.name);
 
@@ -224,18 +216,17 @@ export function escapeEOL(str: string) {
 }
 
 export function escapeBOM(str: string) {
-  return str.charCodeAt(0) === 0xFEFF ? str.substring(1) : str;
+  return str.charCodeAt(0) === 0xfeff ? str.substring(1) : str;
 }
 
 export function escapeFileContent(content: string) {
   return escapeBOM(escapeEOL(content));
 }
 
-export type ReadFileOptions = { encoding?: BufferEncoding | null; flag?: string; escape?: string }
+export type ReadFileOptions = { encoding?: BufferEncoding | null; flag?: string; escape?: string };
 
 async function _readFile(path: string, options: ReadFileOptions | null = {}) {
-  if (!Object.prototype.hasOwnProperty.call(options,
-    'encoding')) options.encoding = 'utf8';
+  if (!Object.prototype.hasOwnProperty.call(options, 'encoding')) options.encoding = 'utf8';
 
   const content = await fsPromises.readFile(path, options);
 
@@ -248,8 +239,7 @@ async function _readFile(path: string, options: ReadFileOptions | null = {}) {
 
 export function readFile(path: string): BlueBirdPromise<string>;
 export function readFile(path: string, options?: ReadFileOptions | null): BlueBirdPromise<string | Buffer>;
-export function readFile(
-  path: string, options?: ReadFileOptions | null) {
+export function readFile(path: string, options?: ReadFileOptions | null) {
   if (!path) throw new TypeError('path is required!');
 
   return BlueBirdPromise.resolve(_readFile(path, options));
@@ -260,8 +250,7 @@ export function readFileSync(path: string, options?: ReadFileOptions): string | 
 export function readFileSync(path: string, options: ReadFileOptions = {}) {
   if (!path) throw new TypeError('path is required!');
 
-  if (!Object.prototype.hasOwnProperty.call(options,
-    'encoding')) options.encoding = 'utf8';
+  if (!Object.prototype.hasOwnProperty.call(options, 'encoding')) options.encoding = 'utf8';
 
   const content = fs.readFileSync(path, options);
 
@@ -272,11 +261,8 @@ export function readFileSync(path: string, options: ReadFileOptions = {}) {
   return content;
 }
 
-async function _emptyDir(
-  path: string, parent?: string,
-  options?: ReadDirOptions & { exclude?: string[] }) {
-  const entries = (await _readAndFilterDir(path, options)).filter(
-    ignoreExcludeFiles(options.exclude, parent));
+async function _emptyDir(path: string, parent?: string, options?: ReadDirOptions & { exclude?: string[] }) {
+  const entries = (await _readAndFilterDir(path, options)).filter(ignoreExcludeFiles(options.exclude, parent));
   const results: string[] = [];
 
   await BlueBirdPromise.map(entries, (item: Dirent) => {
@@ -284,7 +270,7 @@ async function _emptyDir(
     const currentPath = join(parent, item.name);
 
     if (item.isDirectory()) {
-      return _emptyDir(fullPath, currentPath, options).then(async files => {
+      return _emptyDir(fullPath, currentPath, options).then(async (files) => {
         results.push(...files);
         if (!(await fsPromises.readdir(fullPath)).length) {
           return fsPromises.rmdir(fullPath);
@@ -298,18 +284,14 @@ async function _emptyDir(
   return results;
 }
 
-export function emptyDir(
-  path: string, options: ReadDirOptions & { exclude?: string[] } = {}) {
+export function emptyDir(path: string, options: ReadDirOptions & { exclude?: string[] } = {}) {
   if (!path) throw new TypeError('path is required!');
 
   return BlueBirdPromise.resolve(_emptyDir(path, '', options));
 }
 
-function _emptyDirSync(
-  path: string, options: ReadDirOptions & { exclude?: string[] },
-  parent?: string) {
-  const entries = _readAndFilterDirSync(path, options)
-    .filter(ignoreExcludeFiles(options.exclude, parent));
+function _emptyDirSync(path: string, options: ReadDirOptions & { exclude?: string[] }, parent?: string) {
+  const entries = _readAndFilterDirSync(path, options).filter(ignoreExcludeFiles(options.exclude, parent));
 
   const results: string[] = [];
 
@@ -334,8 +316,7 @@ function _emptyDirSync(
   return results;
 }
 
-export function emptyDirSync(
-  path: string, options: ReadDirOptions & { exclude?: string[] } = {}) {
+export function emptyDirSync(path: string, options: ReadDirOptions & { exclude?: string[] } = {}) {
   if (!path) throw new TypeError('path is required!');
 
   return _emptyDirSync(path, options, '');
@@ -346,8 +327,7 @@ async function _rmdir(path: string) {
   await BlueBirdPromise.map(files, (item: Dirent) => {
     const childPath = join(path, item.name);
 
-    return item.isDirectory() ? _rmdir(childPath) : fsPromises.unlink(
-      childPath);
+    return item.isDirectory() ? _rmdir(childPath) : fsPromises.unlink(childPath);
   });
   return fsPromises.rmdir(path);
 }
@@ -381,8 +361,7 @@ export function rmdirSync(path: string) {
   _rmdirSync(path);
 }
 
-export function watch(
-  path: string | Array<string>, options?: ChokidarOptions) {
+export function watch(path: string | Array<string>, options?: ChokidarOptions) {
   if (!path) throw new TypeError('path is required!');
 
   const watcher = chokidar.watch(path, options);
@@ -415,7 +394,7 @@ function _findUnusedPath(path: string, files: string[]): string {
 }
 
 async function _ensurePath(path: string): Promise<string> {
-  if (!await exists(path)) return path;
+  if (!(await exists(path))) return path;
 
   const files = await fsPromises.readdir(dirname(path));
   return _findUnusedPath(path, files);
@@ -436,32 +415,41 @@ export function ensurePathSync(path: string) {
   return _findUnusedPath(path, files);
 }
 
-export function ensureWriteStream(path: string, options?: BufferEncoding | {
-  flags?: string;
-  encoding?: BufferEncoding;
-  fd?: number;
-  mode?: number;
-  autoClose?: boolean;
-  emitClose?: boolean;
-  start?: number;
-  highWaterMark?: number;
-}) {
+export function ensureWriteStream(
+  path: string,
+  options?:
+    | BufferEncoding
+    | {
+        flags?: string;
+        encoding?: BufferEncoding;
+        fd?: number;
+        mode?: number;
+        autoClose?: boolean;
+        emitClose?: boolean;
+        start?: number;
+        highWaterMark?: number;
+      }
+) {
   if (!path) throw new TypeError('path is required!');
 
-  return checkParent(path)
-    .then(() => fs.createWriteStream(path, options));
+  return checkParent(path).then(() => fs.createWriteStream(path, options));
 }
 
-export function ensureWriteStreamSync(path: string, options?: BufferEncoding | {
-  flags?: string;
-  encoding?: BufferEncoding;
-  fd?: number;
-  mode?: number;
-  autoClose?: boolean;
-  emitClose?: boolean;
-  start?: number;
-  highWaterMark?: number;
-}) {
+export function ensureWriteStreamSync(
+  path: string,
+  options?:
+    | BufferEncoding
+    | {
+        flags?: string;
+        encoding?: BufferEncoding;
+        fd?: number;
+        mode?: number;
+        autoClose?: boolean;
+        emitClose?: boolean;
+        start?: number;
+        highWaterMark?: number;
+      }
+) {
   if (!path) throw new TypeError('path is required!');
 
   fs.mkdirSync(dirname(path), { recursive: true });
@@ -469,13 +457,16 @@ export function ensureWriteStreamSync(path: string, options?: BufferEncoding | {
 }
 
 // access
-['F_OK', 'R_OK', 'W_OK', 'X_OK'].forEach(key => {
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    value: fs.constants[key],
-    writable: false
+if (typeof module !== 'undefined' && typeof module.exports === 'object' && typeof module.exports !== null) {
+  // CommonJS compatibility
+  ['F_OK', 'R_OK', 'W_OK', 'X_OK'].forEach((key) => {
+    Object.defineProperty(exports, key, {
+      enumerable: true,
+      value: fs.constants[key],
+      writable: false
+    });
   });
-});
+}
 
 export const access = BlueBirdPromise.promisify(fs.access);
 export const accessSync = fs.accessSync;
