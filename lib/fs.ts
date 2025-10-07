@@ -3,17 +3,24 @@ import chokidar, { ChokidarOptions } from 'chokidar';
 import BlueBirdPromise from 'bluebird';
 import { dirname, join, extname, basename } from 'path';
 import { escapeRegExp } from 'hexo-util';
-
+import { promisify } from 'util';
 import fs from 'graceful-fs';
-import type { Stream } from 'stream';
 
-const fsPromises = fs.promises;
+const promisifyAccess = promisify(fs.access);
+const promisifyMkdir = promisify(fs.mkdir);
+const promisifyReaddir = promisify(fs.readdir);
+const promisifyReadFile = promisify(fs.readFile);
+const promisifyWriteFile = promisify(fs.writeFile);
+const promisifyCopyFile = promisify(fs.copyFile);
+const promisifyAppendFile = promisify(fs.appendFile);
+const promisifyUnlink = promisify(fs.unlink);
+const promisifyRmdir = promisify(fs.rmdir);
 
 const rEOL = /\r\n/g;
 
 export function exists(path: string) {
   if (!path) throw new TypeError('path is required!');
-  const promise = fsPromises.access(path).then(() => true, error => {
+  const promise = promisifyAccess(path).then(() => true, error => {
     if (error.code !== 'ENOENT') throw error;
     return false;
   });
@@ -37,7 +44,7 @@ export function existsSync(path: string) {
 export function mkdirs(path: string) {
   if (!path) throw new TypeError('path is required!');
 
-  return BlueBirdPromise.resolve(fsPromises.mkdir(path, { recursive: true }));
+  return BlueBirdPromise.resolve(promisifyMkdir(path, { recursive: true }));
 }
 
 export function mkdirsSync(path: string) {
@@ -47,12 +54,12 @@ export function mkdirsSync(path: string) {
 }
 
 function checkParent(path: string) {
-  return BlueBirdPromise.resolve(fsPromises.mkdir(dirname(path), { recursive: true }));
+  return BlueBirdPromise.resolve(promisifyMkdir(dirname(path), { recursive: true }));
 }
 
 export function writeFile(
   path: string,
-  data?: string | NodeJS.ArrayBufferView | Iterable<string | NodeJS.ArrayBufferView> | AsyncIterable<string | NodeJS.ArrayBufferView> | Stream,
+  data?: string | NodeJS.ArrayBufferView,
   options?: WriteFileOptions
 ) {
   if (!path) throw new TypeError('path is required!');
@@ -60,7 +67,7 @@ export function writeFile(
   if (!data) data = '';
 
   return checkParent(path)
-    .then(() => fsPromises.writeFile(path, data, options));
+    .then(() => promisifyWriteFile(path, data, options));
 }
 
 
@@ -78,7 +85,7 @@ export function appendFile(
   if (!path) throw new TypeError('path is required!');
 
   return checkParent(path)
-    .then(() => fsPromises.appendFile(path, data, options));
+    .then(() => promisifyAppendFile(path, data, options));
 }
 
 export function appendFileSync(path: string, data: string | Uint8Array, options?: WriteFileOptions) {
@@ -94,7 +101,7 @@ export function copyFile(
   if (!dest) throw new TypeError('dest is required!');
 
   return checkParent(dest)
-    .then(() => fsPromises.copyFile(src, dest, flags));
+    .then(() => promisifyCopyFile(src, dest, flags));
 }
 
 const trueFn = () => true as const;
@@ -129,7 +136,7 @@ export type ReadDirOptions = {
 async function _readAndFilterDir(
   path: string, options: ReadDirOptions = {}): Promise<Dirent[]> {
   const { ignoreHidden = true, ignorePattern } = options;
-  return (await fsPromises.readdir(path, { ...options, withFileTypes: true }))
+  return (await promisifyReaddir(path, { ...options, withFileTypes: true }))
     .filter(ignoreHiddenFiles(ignoreHidden))
     .filter(ignoreFilesRegex(ignorePattern));
 }
@@ -237,7 +244,7 @@ async function _readFile(path: string, options: ReadFileOptions | null = {}) {
   if (!Object.prototype.hasOwnProperty.call(options,
     'encoding')) options.encoding = 'utf8';
 
-  const content = await fsPromises.readFile(path, options);
+  const content = await promisifyReadFile(path, options);
 
   if (options.escape == null || options.escape) {
     return escapeFileContent(content as string);
@@ -286,13 +293,13 @@ async function _emptyDir(
     if (item.isDirectory()) {
       return _emptyDir(fullPath, currentPath, options).then(async files => {
         results.push(...files);
-        if (!(await fsPromises.readdir(fullPath)).length) {
-          return fsPromises.rmdir(fullPath);
+        if (!(await promisifyReaddir(fullPath)).length) {
+          return promisifyRmdir(fullPath);
         }
       });
     }
     results.push(currentPath);
-    return fsPromises.unlink(fullPath);
+    return promisifyUnlink(fullPath);
   });
 
   return results;
@@ -342,14 +349,14 @@ export function emptyDirSync(
 }
 
 async function _rmdir(path: string) {
-  const files = fsPromises.readdir(path, { withFileTypes: true });
+  const files = promisifyReaddir(path, { withFileTypes: true });
   await BlueBirdPromise.map(files, (item: Dirent) => {
     const childPath = join(path, item.name);
 
-    return item.isDirectory() ? _rmdir(childPath) : fsPromises.unlink(
+    return item.isDirectory() ? _rmdir(childPath) : promisifyUnlink(
       childPath);
   });
-  return fsPromises.rmdir(path);
+  return promisifyRmdir(path);
 }
 
 export function rmdir(path: string) {
@@ -417,7 +424,7 @@ function _findUnusedPath(path: string, files: string[]): string {
 async function _ensurePath(path: string): Promise<string> {
   if (!await exists(path)) return path;
 
-  const files = await fsPromises.readdir(dirname(path));
+  const files = await promisifyReaddir(dirname(path));
   return _findUnusedPath(path, files);
 }
 
