@@ -44,7 +44,6 @@
     "chai": "^4.3.6",
     "eslint": "^9.37.0",
     "eslint-config-hexo": "^6.0.0",
-    "eslint-plugin-import": "^2.31.0",
     "mocha": "^11.0.1",
     "ts-node": "^10.9.1",
     "typescript": "^5.7.2"
