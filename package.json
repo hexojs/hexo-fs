@@ -30,7 +30,7 @@
   "license": "MIT",
   "dependencies": {
     "bluebird": "^3.7.2",
-    "chokidar": "^4.0.3",
+    "chokidar": "^5.0.0",
     "graceful-fs": "^4.2.10",
     "hexo-util": "^3.3.0"
   },
